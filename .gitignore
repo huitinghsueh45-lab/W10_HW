@@ -1,9 +1,10 @@
-# 系統與快取
+# 系統與快取（含 Google 雲端硬碟自動產生的 desktop.ini）
 __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
 desktop.ini
+**/desktop.ini
 *.bak
 
 # 虛擬環境
@@ -21,9 +22,8 @@ credentials.json
 .idea/
 
 # 作業規劃與內部協作紀錄（不推上 GitHub）
-.HW_Plan/
 HW_Plan/
 TASK_LOG.md
 
 # 排除超過 GitHub 50MB/100MB 限制之大型課程講義 PDF（唯讀原始檔保留於本地）
-raw/lectures/*.pdf
+raw/lectures/

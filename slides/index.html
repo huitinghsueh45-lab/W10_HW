@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>生成式 AI 入門：從函數 f_θ 到 Transformer｜教學互動簡報</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-alt: #26354d;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --accent-blue: #38bdf8;
+      --accent-indigo: #818cf8;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose: #fb7185;
+      --border-color: rgba(148, 163, 184, 0.22);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 15% 15%, #1e293b 0%, #0b1120 100%);
+      color: var(--text-main);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+    /* Top Navigation Bar */
+    header.topbar {
+      height: 54px;
+      background: rgba(15, 23, 42, 0.88);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+      backdrop-filter: blur(8px);
+      z-index: 20;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--accent-blue);
+    }
+    .stage-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+    .stage-pill {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .stage-pill.active {
+      background: rgba(56, 189, 248, 0.18);
+      color: var(--accent-blue);
+      border-color: rgba(56, 189, 248, 0.45);
+      font-weight: 600;
+    }
+    .slide-counter {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Slide Viewport */
+    main.deck {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 28px;
+    }
+    section.slide {
+      display: none;
+      width: 100%;
+      max-width: 1240px;
+      height: 100%;
+      max-height: 760px;
+      background: rgba(30, 41, 59, 0.78);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 26px 34px 18px;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      overflow-y: auto;
+      user-select: text;
+    }
+    section.slide.active {
+      display: flex;
+      animation: fadeIn 0.24s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Slide Header */
+    .slide-header {
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+    .section-tag {
+      display: inline-block;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 3px 10px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      background: rgba(129, 140, 248, 0.18);
+      color: var(--accent-indigo);
+      border: 1px solid rgba(129, 140, 248, 0.35);
+    }
+    .slide-title {
+      font-size: 1.62rem;
+      font-weight: 800;
+      line-height: 1.28;
+      color: #ffffff;
+    }
+    .slide-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Slide Body */
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: center;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+    }
+    .card h3 {
+      font-size: 1.05rem;
+      color: var(--accent-blue);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h3.emerald { color: var(--accent-emerald); }
+    .card h3.amber { color: var(--accent-amber); }
+    .card h3.rose { color: var(--accent-rose); }
+    .card h3.indigo { color: var(--accent-indigo); }
+    .card p, .card li {
+      font-size: 0.92rem;
+      line-height: 1.56;
+      color: var(--text-muted);
+    }
+    .card ul, .card ol {
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    strong.hl { color: #ffffff; font-weight: 700; }
+    strong.blue { color: var(--accent-blue); }
+    strong.emerald { color: var(--accent-emerald); }
+    strong.amber { color: var(--accent-amber); }
+    strong.rose { color: var(--accent-rose); }
+
+    /* Self-contained Math Formatting */
+    .math-box {
+      background: rgba(2, 6, 23, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+      font-size: 1.08rem;
+      color: #f8fafc;
+      text-align: center;
+      margin: 6px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .frac {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      margin: 0 4px;
+      line-height: 1.1;
+    }
+    .frac > .num {
+      border-bottom: 1.5px solid #e2e8f0;
+      padding: 0 5px 2px;
+    }
+    .frac > .den {
+      padding: 2px 5px 0;
+    }
+    .sqrt {
+      display: inline-flex;
+      align-items: center;
+    }
+    .sqrt::before {
+      content: "√";
+      font-size: 1.15em;
+      margin-right: 1px;
+    }
+    .sqrt > span {
+      border-top: 1.5px solid #e2e8f0;
+      padding-top: 1px;
+    }
+    .vec {
+      display: inline-flex;
+      flex-direction: column;
+      border-left: 2px solid #cbd5e1;
+      border-right: 2px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 0.88em;
+      line-height: 1.25;
+      vertical-align: middle;
+      margin: 0 4px;
+    }
+
+    /* Tables */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      margin-top: 4px;
+    }
+    table.data-table th, table.data-table td {
+      border: 1px solid var(--border-color);
+      padding: 7px 10px;
+      text-align: left;
+    }
+    table.data-table th {
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-blue);
+      font-weight: 700;
+    }
+    table.data-table td {
+      color: var(--text-muted);
+    }
+
+    /* Interactive Controls */
+    .interactive-panel {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 5px 0;
+      font-size: 0.86rem;
+    }
+    .bar-label {
+      width: 110px;
+      flex-shrink: 0;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    .bar-track {
+      flex: 1;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-emerald));
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+    .bar-val {
+      width: 58px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent-amber);
+      font-weight: 700;
+    }
+    .btn {
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn:hover, .btn.active {
+      background: var(--accent-blue);
+      color: #0f172a;
+    }
+
+    /* Quiz Styling */
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .quiz-item {
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .quiz-q {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .quiz-opts {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .quiz-ans {
+      display: none;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(52, 211, 153, 0.12);
+      border-left: 3px solid var(--accent-emerald);
+      color: #e2e8f0;
+      margin-top: 4px;
+    }
+    .quiz-ans.visible {
+      display: block;
+    }
+
+    /* Slide Footer (Mandatory Wiki Source Attribution) */
+    .slide-footer {
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+    .wiki-source-badge {
+      background: rgba(129, 140, 248, 0.12);
+      border: 1px solid rgba(129, 140, 248, 0.3);
+      color: #c7d2fe;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.78rem;
+    }
+
+    /* Bottom Controls */
+    footer.bottombar {
+      height: 48px;
+      background: rgba(15, 23, 42, 0.9);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+    .progress-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      margin: 0 20px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-indigo));
+      width: 7.69%;
+      transition: width 0.25s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="topbar">
+    <div class="brand">
+      <span>🧠 生成式 AI 入門：從函數 f<sub>θ</sub> 到 Transformer</span>
+    </div>
+    <div class="stage-pills" id="stagePills">
+      <span class="stage-pill" onclick="goToSlide(0)">1. 為什麼 (1-2)</span>
+      <span class="stage-pill" onclick="goToSlide(2)">2. 是什麼 (3-5)</span>
+      <span class="stage-pill" onclick="goToSlide(5)">3. 怎麼運作 (6-9)</span>
+      <span class="stage-pill" onclick="goToSlide(9)">4. 例子 (10)</span>
+      <span class="stage-pill" onclick="goToSlide(10)">5. 常見誤解 (11)</span>
+      <span class="stage-pill" onclick="goToSlide(11)">6. 小結 (12)</span>
+      <span class="stage-pill" onclick="goToSlide(12)">7. 自我檢測 (13)</span>
+    </div>
+    <div class="slide-counter" id="slideCounter">1 / 13</div>
+  </header>
+
+  <!-- Main Deck -->
+  <main class="deck">
+
+    <!-- ==================== SLIDE 1: 為什麼 (封面與三大焦慮) ==================== -->
+    <section class="slide active" data-stage="0">
+      <div class="slide-header">
+        <span class="section-tag">段落一：為什麼要學生成式 AI 原理？（Why）</span>
+        <h1 class="slide-title">生成式 AI 入門：從函數 <i>f<sub>θ</sub></i> 到 Transformer</h1>
+        <p class="slide-subtitle">教 AI 用你的方法做事，用底層原理（含數學直覺）徹底消除三大 AI 焦慮</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-3">
+          <div class="card">
+            <h3 class="rose">😰 焦慮 1：我會被 AI 取代嗎？</h3>
+            <p>常聽到「會取代你的是會用 AI 的人」，擔心 AI 比自己更厲害。</p>
+            <p style="margin-top:8px;"><strong class="emerald">原理破局：</strong>現代 AI 其實只是沒有意識、不會自己分析的<strong class="hl">「呆萌型 AI 機器人」</strong>，必須由領域專家定義輸入與輸出。</p>
+          </div>
+          <div class="card">
+            <h3 class="amber">🌪️ 焦慮 2：每天都有新工具學不完？</h3>
+            <p>ChatGPT、Claude、Gemini、Grok、Llama 每天推陳出新，不知哪個最好。</p>
+            <p style="margin-top:8px;"><strong class="emerald">原理破局：</strong>所有大型語言模型的<strong class="hl">基礎模型原理幾乎相同</strong>，懂一個就懂全部，成為強大的吸收器。</p>
+          </div>
+          <div class="card">
+            <h3 class="indigo">🧩 焦慮 3：技術名詞看起來好難？</h3>
+            <p>Prompt / Context / Harness / Loop / Graph Engineering、Chat Bot、AI Agent 令人眼花撩亂。</p>
+            <p style="margin-top:8px;"><strong class="emerald">原理破局：</strong>這些名詞本質上都只是<strong class="hl">「教 AI 做事的方法」</strong>，看懂函數與機率就不再被術語嚇倒。</p>
+          </div>
+        </div>
+
+        <div class="card" style="background: rgba(56, 189, 248, 0.08); border-color: rgba(56, 189, 248, 0.35);">
+          <h3>🎯 掌握原理帶給你的四個超能力</h3>
+          <div class="grid-2" style="gap:10px;">
+            <ul>
+              <li><strong class="hl">看清限制並突破：</strong>知道 AI 為什麼會出錯，才能設計流程突破限制。</li>
+              <li><strong class="hl">不盲目追逐模型：</strong>明白如何挑選與測試適合自己任務的模型。</li>
+            </ul>
+            <ul>
+              <li><strong class="hl">懂得為何引導有效：</strong>理解為什麼提供「正確的資訊＋清楚的指引」能改變條件機率。</li>
+              <li><strong class="hl">本簡報學習主線：</strong>函數映射 <i>f<sub>θ</sub></i> → 神經網路與梯度下降 → 資訊熵與隨機抽樣 → Transformer。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、sources/lecture-01-learn-ai-without-anxiety.md</span>
+        <span>使用鍵盤 ← → 方向鍵翻頁</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 2: 為什麼 (生成動機與一對多平均困境) ==================== -->
+    <section class="slide" data-stage="0">
+      <div class="slide-header">
+        <span class="section-tag">段落一：為什麼（Why — 生成動機與核心矛盾）</span>
+        <h2 class="slide-title">為什麼要讓電腦「創作」？為什麼不能直接一對多訓練？</h2>
+        <p class="slide-subtitle">從圖靈與費曼的提問，看見生成式 AI 最關鍵的「一對多平均困境」</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="amber">💡 人類探索生成模型（Generative Models）的三大動機</h3>
+            <ol>
+              <li><strong class="hl">讓電腦具備創作力：</strong>不只做分類判斷，更能生成全新的圖像與文字作品。</li>
+              <li><strong class="hl">圖靈的問題（Alan Turing, 1950）：</strong>在還沒有現代電腦的 1950 年，圖靈便提問：「透過無線打字機對話，人類能否分辨對方是真人還是機器？」</li>
+              <li><strong class="hl">費曼的創造哲學（Richard Feynman）：</strong><br>
+                <span style="color:var(--accent-blue); font-style:italic;">"What I cannot create, I do not understand."</span><br>
+                （我無法創造的事物，就代表我還沒有真正理解。）</li>
+            </ol>
+          </div>
+
+          <div class="card">
+            <h3 class="rose">⚠️ 創作型 AI 的第一道牆：「一對多」不是函數！</h3>
+            <p>如果我們直接把提示詞 <code style="color:var(--accent-amber);">"一個可愛的女孩"</code> 當作輸入，但訓練資料中有 <i>N</i> 張長相不同的可愛女孩照片：</p>
+            <div class="math-box">
+              <span>同樣輸入 <i>x</i> 對應多個不同輸出 → 硬訓練會得到 <b>算術平均</b>：</span>
+              <span class="frac"><span class="num">圖<sub>1</sub> + 圖<sub>2</sub> + ⋯ + 圖<sub>N</sub></span><span class="den"><i>N</i></span></span>
+            </div>
+            <ul>
+              <li><strong class="rose">災難後果：</strong>所有照片疊加平均後變成模糊的<strong class="hl">「四不像」</strong>，失去創作意義！</li>
+              <li><strong class="emerald">解決方向：</strong>(1) 在輸入端加入隨機抽取的<strong class="hl">潛張量（Latent Tensor, <i>z</i>）</strong>代表天馬行空的想法；或 (2) 讓模型輸出<strong class="hl">機率分佈</strong>再進行隨機抽樣！</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、concepts/probability-entropy-and-sampling.md</span>
+        <span>Slide 2 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 3: 是什麼 (函數映射與張量) ==================== -->
+    <section class="slide" data-stage="1">
+      <div class="slide-header">
+        <span class="section-tag">段落二：是什麼（What — 核心概念 1：函數映射與張量）</span>
+        <h2 class="slide-title">AI 模型是什麼？從張量輸入到機率輸出的「函數學習機 <i>f<sub>θ</sub></i>」</h2>
+        <p class="slide-subtitle">不論判別式或生成式 AI，底層都是接收數字張量、輸出數字張量的函數</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <h3>📐 輸入與輸出都必須是「張量（Tensor）」</h3>
+            <p>電腦不懂人類語意，所有輸入 <i>x<sub>i</sub></i> 與輸出 <i>ŷ<sub>i</sub></i> 都是由數字組成的張量：</p>
+            <table class="data-table">
+              <thead>
+                <tr><th>張量階數</th><th>數學名稱</th><th>實例（來自 Wiki 記載）</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>0 階 Tensor</td><td>純量（Scalar）</td><td>單一數字 <code>x = 9487</code></td></tr>
+                <tr><td>1 階 Tensor</td><td>向量（Vector）</td><td>一串數字 <code>x = [9, 4, 8, 7]</code>、784 維拉平影像</td></tr>
+                <tr><td>2 階 Tensor</td><td>矩陣（Matrix）</td><td>某股過去 20 天 × <i>N</i> 個特徵（開盤、最低、收盤）</td></tr>
+                <tr><td>3 階 Tensor</td><td>3D 矩陣</td><td>彩色照片的 R、G、B 三個通道像素陣列</td></tr>
+              </tbody>
+            </table>
+            <div class="math-box" style="margin-top:8px;">
+              <span>輸入 <i>x<sub>i</sub></i></span>
+              <span>──( <i>f<sub>θ</sub></i> )──▶</span>
+              <span><i>f<sub>θ</sub></i>(<i>x<sub>i</sub></i>) = <i>ŷ<sub>i</sub></i> =</span>
+              <span class="vec"><span><i>y</i><sub>1</sub></span><span><i>y</i><sub>2</sub></span><span><i>y</i><sub>3</sub></span></span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="emerald">🐦 以「台灣八哥辨識」看懂 Softmax 機率轉換</h3>
+            <p>表面上模型回答「土八哥」，實際上 <i>f<sub>θ</sub></i> 輸出三個分數 <i>(a, b, c)</i>，再經 <b>Softmax</b> 先取指數轉為正數、後除以總和 <i>S = e<sup>a</sup> + e<sup>b</sup> + e<sup>c</sup></i> 化為條件機率 <i>P<sub>θ</sub>(y<sub>i</sub> | x) = p<sub>i</sub></i>：</p>
+            <div class="math-box">
+              <span>Softmax(<i>a, b, c</i>) =</span>
+              <span>(</span>
+              <span class="frac"><span class="num"><i>e<sup>a</sup></i></span><span class="den"><i>S</i></span></span>,
+              <span class="frac"><span class="num"><i>e<sup>b</sup></i></span><span class="den"><i>S</i></span></span>,
+              <span class="frac"><span class="num"><i>e<sup>c</sup></i></span><span class="den"><i>S</i></span></span>
+              <span>)</span>,
+              <span>∑ <i>p<sub>i</sub></i> = 1</span>
+            </div>
+            <div class="interactive-panel" style="margin-top:6px;">
+              <div style="font-size:0.82rem; color:var(--accent-emerald); margin-bottom:4px; font-weight:700;">
+                📊 教材實例：原始分數 (1.9, 1.1, 0.2) ──Softmax──▶ 機率分佈
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">土八哥 (1.9)</span>
+                <div class="bar-track"><div class="bar-fill" style="width:61%;"></div></div>
+                <span class="bar-val">61%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">白尾八哥 (1.1)</span>
+                <div class="bar-track"><div class="bar-fill" style="width:28%;"></div></div>
+                <span class="bar-val">28%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">家八哥 (0.2)</span>
+                <div class="bar-track"><div class="bar-fill" style="width:11%;"></div></div>
+                <span class="bar-val">11%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、sources/lecture-02-neural-networks.md</span>
+        <span>Slide 3 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 4: 是什麼 (神經元與 3+1 種架構) ==================== -->
+    <section class="slide" data-stage="1">
+      <div class="slide-header">
+        <span class="section-tag">段落二：是什麼（What — 核心概念 2：神經網路架構）</span>
+        <h2 class="slide-title">神經網路是什麼？基本運算單元「神經元」與 3+1 種主流架構</h2>
+        <p class="slide-subtitle">由神經元組裝出近乎全能的函數學習機（Universal Approximation Theorem）</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <h3>⚡ 基本運算單元：單一神經元（Neuron）三步驟</h3>
+            <p>不論哪種深度學習模型，每個神經元的運算方式都完全一樣：</p>
+            <ol>
+              <li><strong class="hl">加權總和：</strong>輸入刺激 <i>x</i><sub>1</sub>, <i>x</i><sub>2</sub>, <i>x</i><sub>3</sub> 乘上權重 <i>w</i><sub>1</sub>, <i>w</i><sub>2</sub>, <i>w</i><sub>3</sub> 得總刺激 <i>w</i><sub>1</sub><i>x</i><sub>1</sub> + <i>w</i><sub>2</sub><i>x</i><sub>2</sub> + <i>w</i><sub>3</sub><i>x</i><sub>3</sub>。</li>
+              <li><strong class="hl">加上偏值（Bias, <i>b</i>）：</strong>做基準調整，得 ∑ <i>w<sub>i</sub>x<sub>i</sub> + b</i>。</li>
+              <li><strong class="hl">非線性激發函數（Activation Function, <i>φ</i>）：</strong>純線性算式疊再多層仍是線性的，必須經激發函數（如本世紀新寵 <strong class="emerald">ReLU</strong>，或舊時代的 Sigmoid）轉換後送出：</li>
+            </ol>
+            <div class="math-box">
+              <span><i>h</i> = <i>φ</i>( <i>w</i><sub>1</sub><i>x</i><sub>1</sub> + <i>w</i><sub>2</sub><i>x</i><sub>2</sub> + <i>w</i><sub>3</sub><i>x</i><sub>3</sub> + <i>b</i> )，學習參數 <i>θ</i> = {<i>w</i><sub>1</sub>, <i>w</i><sub>2</sub>, <i>w</i><sub>3</sub>, <i>b</i>}</span>
+            </div>
+            <p style="font-size:0.84rem; margin-top:4px;">📌 <strong class="amber">萬用近似定理（Universal Approximation Theorem）：</strong>數學證明只要「一個隱藏層」的神經網路，理論上就能學會你要學的函數！</p>
+          </div>
+
+          <div class="card">
+            <h3 class="indigo">🏗️ 深度學習的「3 + 1」種神經網路架構</h3>
+            <p>隱藏層神經元的不同連結方式，構成了現代 AI 的四大支柱：</p>
+            <table class="data-table">
+              <thead>
+                <tr><th>架構名稱</th><th>核心隱藏層</th><th>專長與結構特性</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong class="hl">1. DNN</strong></td><td>全連結層 (Dense)</td><td>前一層連到下一層每個神經元；全面考慮的基本型（只需決定幾層、每層幾個神經元）</td></tr>
+                <tr><td><strong class="hl">2. CNN</strong></td><td>卷積層 (Conv)</td><td>圖形與影像辨識天王</td></tr>
+                <tr><td><strong class="hl">3. RNN</strong></td><td>遞歸層 (LSTM/GRU)</td><td>有記憶的結構，把上次輸出 <i>h<sub>t-1</sub></i> 傳回與本次 <i>x<sub>t</sub></i> 結合</td></tr>
+                <tr><td><strong class="blue">+1. Transformers</strong></td><td>Self-Attention</td><td>現代大型語言模型與多模態生成的核心架構</td></tr>
+              </tbody>
+            </table>
+            <p style="font-size:0.83rem; margin-top:8px;">💡 <strong class="hl">為什麼上世紀神經網路沒成功？</strong>三巨頭（Hinton、LeCun、Bengio）指出當年欠缺三大要件：<strong class="emerald">複雜的軟體、大量的數據、電腦計算能力</strong>。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/neural-networks-and-learning.md、sources/lecture-02-neural-networks.md</span>
+        <span>Slide 4 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 5: 是什麼 (LLM 猜下一個字與 Word Embedding) ==================== -->
+    <section class="slide" data-stage="1">
+      <div class="slide-header">
+        <span class="section-tag">段落二：是什麼（What — 核心概念 3：LLM 與詞嵌入）</span>
+        <h2 class="slide-title">大型語言模型（LLM）是什麼？「猜下一個字」與詞嵌入表徵</h2>
+        <p class="slide-subtitle">把全世界所有句子變成訓練資料，並用隱藏層學出帶有「語意」的特徵代表向量</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="amber">🗣️ 為什麼「只看前一個字」不是函數？</h3>
+            <p>LLM 的核心任務是<strong class="hl">「看前面一堆字，預測下一個字」</strong>（自監督學習：如 <code>"炎龍老師很帥"</code> 可自動拆出 <code>(炎)→龍</code>、<code>(龍)→老</code> 等無限訓練對）。</p>
+            <p style="margin-top:6px;">但若只輸入「前一個字」訓練 <code>"今天天氣很好。"</code>：</p>
+            <div class="math-box">
+              <span><i>f<sub>θ</sub></i>("天") = "天" 　且　 <i>f<sub>θ</sub></i>("天") = "氣" 　（一對多，違反函數定義！）</span>
+            </div>
+            <p>👉 <strong class="emerald">結論：</strong>語言模型必須是<strong class="hl">「有記憶的」神經網路</strong>，將前面所有字 <i>x</i><sub>1</sub>, …, <i>x</i><sub><i>t</i>-1</sub> 融合為記憶向量 <i>h</i><sub><i>t</i>-1</sub>，計算條件機率 <i>P<sub>θ</sub></i>(<i>w<sub>i</sub></i> | <i>x</i><sub>1</sub>, …, <i>x<sub>T</sub></i>)！</p>
+          </div>
+
+          <div class="card">
+            <h3 class="emerald">🧭 Word Embedding：讓數字向量帶有「文字的意思」</h3>
+            <ul>
+              <li><strong class="rose">One-hot 的缺陷：</strong>把 <code>的=1, 一=2, 我=5</code> 轉成只有一個 <code>1</code> 的向量，本質還是流水編號，毫無語意距離。</li>
+              <li><strong class="hl">代理任務（Pretext Task）：</strong>設計「電腦必須懂輸入才能完成」的小任務，取中間隱藏層輸出（如 128 維）作為<strong class="blue">特徵代表向量（Embedding）</strong>。</li>
+              <li><strong class="hl">Word2Vec（Mikolov et al., 2013）兩種代理任務：</strong>
+                <br>• <b>CBOW：</b>用周圍字 (<i>x</i><sub><i>t</i>-2</sub>, <i>x</i><sub><i>t</i>-1</sub>, <i>x</i><sub><i>t</i>+1</sub>, <i>x</i><sub><i>t</i>+2</sub>) 預測中間字 <i>x<sub>t</sub></i>。
+                <br>• <b>Skip-Gram：</b>用中間字 <i>x<sub>t</sub></i> 預測周圍的字。</li>
+              <li><strong class="amber">權重即記憶：</strong>One-hot 乘上權重矩陣 <i>W<sup>T</sup>x = h</i> 就是直接抽出對應列向量（Transformer 則內建 Embedding 層同步訓練），相似字自動群聚且滿足「國王 − 男人 + 女人 = 皇后」！</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/word-embedding-and-sampling-strategies.md、concepts/transformer-and-self-attention.md</span>
+        <span>Slide 5 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 6: 怎麼運作 (損失函數、Cross Entropy 與梯度下降) ==================== -->
+    <section class="slide" data-stage="2">
+      <div class="slide-header">
+        <span class="section-tag">段落三：怎麼運作（How It Works — 機制 1：損失函數與梯度下降）</span>
+        <h2 class="slide-title">機器怎麼學會函數？從資訊熵、交叉熵到梯度下降法</h2>
+        <p class="slide-subtitle">用 Cross Entropy 評估機率分佈差距，再用微積分切線斜率自動找到最佳參數 θ*</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="amber">📉 為什麼分類與語言模型偏愛 Cross Entropy 而非 MSE？</h3>
+            <ul>
+              <li><strong class="hl">資訊量（驚訝指數）：</strong><i>I(x) = −log P(x)</i>（機率越低越驚訝，如加州明天下大雨）。</li>
+              <li><strong class="hl">夏農熵（Entropy）：</strong>平均訊息量（亂度）<i>H(P) = −∑ p<sub>i</sub> log p<sub>i</sub></i>。</li>
+              <li><strong class="hl">交叉熵（Cross Entropy）：</strong>比較真實分佈 <i>P(y)</i> 與預測分佈 <i>Q(ŷ)</i>：</li>
+            </ul>
+            <div class="math-box">
+              <span><i>H(P, Q)</i> = −∑ <i>y<sub>i</sub></i> log <i>ŷ<sub>i</sub></i> = −log <i>ŷ<sub>i</sub></i> （當第 <i>i</i> 類為正確答案 <i>y<sub>i</sub></i> = 1）</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr><th>正確答案 <i>y</i> = [1, 0, 0]</th><th>MSE 均方差</th><th>Cross Entropy</th><th>物理意義</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>預測 A：[0.7, 0.19, 0.11]</td><td>0.14</td><td><strong class="emerald">0.36</strong></td><td rowspan="2">正確類別皆為 70%，Cross Entropy 視為一樣好；若正確類機率極低則給予<b>大扣分</b>！</td></tr>
+                <tr><td>預測 B：[0.7, 0.30, 0.00]</td><td>0.18</td><td><strong class="emerald">0.36</strong></td></tr>
+              </tbody>
+            </table>
+            <p style="font-size:0.8rem; margin-top:4px;">註：若在模型蒸餾學習老師模型的 Soft Target（如 [0.7, 0.2, 0.1]），則使用 <b>KL 散度</b> <i>D<sub>KL</sub>(P∥Q) = H(P,Q) − H(P)</i>（差距可放大 3 倍：0.01 vs. 0.03）。</p>
+          </div>
+
+          <div class="card">
+            <h3 class="emerald">⛰️ 梯度下降法（Gradient Descent）：萬用參數學習律</h3>
+            <p>目標是調整參數 <i>θ</i> 讓損失 <i>L(θ<sub>1</sub>) > L(θ<sub>2</sub>) > …</i> 走到最小值 <i>L(θ*)</i>：</p>
+            <ol>
+              <li><strong class="hl">單一參數看切線斜率：</strong>微積分切線斜率 <i>L'(w) = dL/dw</i> 指向<b>局部極大值</b>方向，因此往極小值必須<b>減去斜率</b>。</li>
+              <li><strong class="hl">乘上學習率（Learning Rate, <i>η</i>）：</strong>避免一步跨太大「跑過頭」：<i>w ← w − η (dL/dw)</i>。</li>
+              <li><strong class="hl">多參數偏微分與梯度向量 ∇<i>L</i>：</strong>對每個參數「假裝只有它一個變數、其餘代入常數」求偏微分（如 <i>L=(b<sub>1</sub>+2w<sub>1</sub>−w<sub>2</sub>−3)<sup>2</sup></i> 在 (1,−1,2) 化為 <i>4w<sub>1</sub><sup>2</sup></i>）：</li>
+            </ol>
+            <div class="math-box">
+              <span><i>θ</i> ← <i>θ</i> − <i>η</i> ∇<i>L</i> ，其中 ∇<i>L</i> =</span>
+              <span class="vec"><span>∂<i>L</i> / ∂<i>w</i><sub>1</sub></span><span>∂<i>L</i> / ∂<i>w</i><sub>2</sub></span><span>∂<i>L</i> / ∂<i>b</i><sub>1</sub></span></span>
+              <span>（結合反向傳播 Backpropagation）</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/neural-networks-and-learning.md、concepts/probability-entropy-and-sampling.md</span>
+        <span>Slide 6 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 7: 怎麼運作 (隨機抽樣與 Temperature / Top-k / Top-p) ==================== -->
+    <section class="slide" data-stage="2">
+      <div class="slide-header">
+        <span class="section-tag">段落三：怎麼運作（How It Works — 機制 2：生成隨機性與選字旋鈕）</span>
+        <h2 class="slide-title">為什麼 AI 每次回答都不一樣？機率抽樣與 Temperature / Top-p</h2>
+        <p class="slide-subtitle">從 GAN 的潛變數對抗，到語言模型 Softmax 輸出端的三大選字控制旋鈕</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <h3>🎲 隨機性的兩大來源與 Top-k / Top-p 截斷</h3>
+            <ul>
+              <li><strong class="hl">途徑 1（輸入端隨機）：GAN 與 StyleGAN</strong><br>
+                生成器 <i>G(z)</i> 接收隨機潛向量 <i>z</i> 與鑑別器 <i>D(x)</i> 對抗（min<sub><i>G</i></sub> max<sub><i>D</i></sub> <i>V(D,G)</i>）；StyleGAN 將 512 維 <i>z</i> 轉為風格向量 <i>w</i> 並以 <b>AdaIN</b> 注入各層。</li>
+              <li><strong class="hl">途徑 2（輸出端抽樣）：依 Softmax 機率抽字</strong><br>
+                八哥辨識永遠挑最高分（argmax），但咖啡推薦或 LLM 猜下一個字則<b>依機率分佈隨機抽樣</b>（如「呆一布在」後接：家 15%、玩 12%、桌 7%、裝 3%）。</li>
+              <li><strong class="amber">Top-k（如 <i>k</i>=50）：</strong>只留前 <i>k</i> 名，但遇唯一正解（「老師是蔡炎＿」必接「龍」）時仍可能混入無關字。</li>
+              <li><strong class="emerald">Top-p（Nucleus Sampling, ICLR 2020）：</strong>由最高分往下累加至 ∑<sub><i>i</i>=1</sub><sup><i>N</i></sup> <i>p<sub>i</sub> > p</i>（如 <i>p</i>=0.9）動態決定前 <i>N</i> 個字，再重分配機率 <i>p'<sub>k</sub> = p<sub>k</sub> / P</i>。</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3 class="emerald">🌡️ 互動體驗：Temperature（溫度 τ）如何改變贏者通吃？</h3>
+            <p>Softmax 指數轉換改為 <i>e<sup>a/τ</sup></i>。點擊下方按鈕切換教材 `p.57` 實測溫度（原始分數 <code>[4.3, 3.4, 0.2]</code>）：</p>
+            <div style="display:flex; gap:8px; margin:8px 0;">
+              <button class="btn" id="tauBtn05" onclick="setTau(0.5)">低溫 τ = 0.5（更固定）</button>
+              <button class="btn active" id="tauBtn10" onclick="setTau(1.0)">標準 τ = 1.0（預設）</button>
+              <button class="btn" id="tauBtn20" onclick="setTau(2.0)">高溫 τ = 2.0（更隨機）</button>
+            </div>
+            <div class="interactive-panel">
+              <div id="tauDesc" style="font-size:0.84rem; color:var(--accent-blue); margin-bottom:6px; font-weight:700;">
+                目前設定：τ = 1.0 — 標準 Softmax 指數轉換（具「贏者通吃」特性）
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">候選字 c (4.3)</span>
+                <div class="bar-track"><div class="bar-fill" id="tauBar1" style="width:70%;"></div></div>
+                <span class="bar-val" id="tauVal1">70%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">候選字 b (3.4)</span>
+                <div class="bar-track"><div class="bar-fill" id="tauBar2" style="width:29%;"></div></div>
+                <span class="bar-val" id="tauVal2">29%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">候選字 a (0.2)</span>
+                <div class="bar-track"><div class="bar-fill" id="tauBar3" style="width:1%;"></div></div>
+                <span class="bar-val" id="tauVal3">1%</span>
+              </div>
+            </div>
+            <p style="font-size:0.82rem; margin-top:6px;">💡 <b>規律：</b><b>τ &gt; 1</b> 拉近分數差距（更隨機有創意）；<b>τ &lt; 1</b> 拉開分數差距（輸出更固定一致）。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/probability-entropy-and-sampling.md、concepts/word-embedding-and-sampling-strategies.md</span>
+        <span>Slide 7 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 8: 怎麼運作 (Transformer QKV 與 Scaled Dot-Product Attention) ==================== -->
+    <section class="slide" data-stage="2">
+      <div class="slide-header">
+        <span class="section-tag">段落三：怎麼運作（How It Works — 機制 3：Transformer 自注意力）</span>
+        <h2 class="slide-title">Transformer 核心引擎：Q, K, V 與 Scaled Dot-Product Attention</h2>
+        <p class="slide-subtitle">徹底捨棄 RNN 遞迴，用列向量矩陣乘法實現 O(1) 平行生成與長距離關聯</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <h3>⚡ Self-Attention 四步驟與公式（Vaswani et al., 2017）</h3>
+            <p style="font-size:0.86rem;">相較於 RNN 必須 <i>O(n)</i> 逐步遞迴，Transformer 的循序操作數與最大路徑長度皆為 <strong class="emerald"><i>O(1)</i></strong>（一次平行生成）：</p>
+            <ol style="font-size:0.88rem;">
+              <li><strong class="hl">生成 Q, K, V（列向量右乘）：</strong>Google 偏愛列向量，故權重矩陣乘在右方：<i>Q = XW<sup>Q</sup>, K = XW<sup>K</sup>, V = XW<sup>V</sup></i>。</li>
+              <li><strong class="hl">內積算相關強度：</strong>大家輪流當 <i>q<sub>i</sub></i>，計算內積 <i>e<sub>j</sub> = q<sub>i</sub> k<sub>j</sub><sup>T</sup></i>（矩陣乘法 <i>QK<sup>T</sup></i>）。</li>
+              <li><strong class="hl">除以 √<i>d<sub>k</sub></i> 並做 Softmax：</strong>化為總和為 1 的注意力權重 <i>α<sub>1</sub>, …, α<sub>T</sub></i>。</li>
+              <li><strong class="hl">Value 列向量線性組合：</strong>輸出融合上下文記憶的向量 <i>h<sub>i</sub> = ∑ α<sub>j</sub> v<sub>j</sub></i>。</li>
+            </ol>
+            <div class="math-box">
+              <span>Attention(<i>Q, K, V</i>) = softmax</span>
+              <span>(</span>
+              <span class="frac"><span class="num"><i>QK<sup>T</sup></i></span><span class="den"><span class="sqrt"><span><i>d<sub>k</sub></i></span></span></span></span>
+              <span>)</span>
+              <span><i>V</i></span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="amber">🔍 跨來源查核：為什麼一定要除以 √<i>d<sub>k</sub></i>？</h3>
+            <p style="font-size:0.86rem;">
+              • <b>原論文理論（Footnote 4）：</b>若 <i>q, k</i> 分量平均 0、變異數 1，內積變異數會膨脹為 <i>d<sub>k</sub></i>，大數值會把 Softmax 推入<b>梯度極小區</b>；除以 √<i>d<sub>k</sub></i> 能把變異數壓回 1。<br>
+              • <b>第五講直覺（p.32-33）：</b>抑制 Softmax「贏者通吃」，如同設溫度 <i>τ = √d<sub>k</sub></i> 把數字拉回 0 附近！
+            </p>
+            <div style="display:flex; gap:8px; margin:6px 0;">
+              <button class="btn active" id="dkBtnRaw" onclick="toggleDk(false)">未除以 √d_k（贏者通吃）</button>
+              <button class="btn" id="dkBtnScaled" onclick="toggleDk(true)">同除以 √5 ≈ 2.236（拉回 0 附近）</button>
+            </div>
+            <div class="interactive-panel">
+              <div id="dkTitle" style="font-size:0.82rem; color:var(--accent-amber); font-weight:700; margin-bottom:4px;">
+                原始內積 [3.9, 3.2, 1, 0.3, 1.1] ──Softmax──▶ 前兩名明明只差一點，權重卻差一倍！
+              </div>
+              <div class="bar-row"><span class="bar-label" id="dkL1">位置 1 (3.9)</span><div class="bar-track"><div class="bar-fill" id="dkB1" style="width:61%;"></div></div><span class="bar-val" id="dkV1">61%</span></div>
+              <div class="bar-row"><span class="bar-label" id="dkL2">位置 2 (3.2)</span><div class="bar-track"><div class="bar-fill" id="dkB2" style="width:30%;"></div></div><span class="bar-val" id="dkV2">30%</span></div>
+              <div class="bar-row"><span class="bar-label" id="dkL3">位置 3 (1.0)</span><div class="bar-track"><div class="bar-fill" id="dkB3" style="width:3%;"></div></div><span class="bar-val" id="dkV3">3%</span></div>
+              <div class="bar-row"><span class="bar-label" id="dkL4">位置 4 (0.3)</span><div class="bar-track"><div class="bar-fill" id="dkB4" style="width:2%;"></div></div><span class="bar-val" id="dkV4">2%</span></div>
+              <div class="bar-row"><span class="bar-label" id="dkL5">位置 5 (1.1)</span><div class="bar-track"><div class="bar-fill" id="dkB5" style="width:4%;"></div></div><span class="bar-val" id="dkV5">4%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/transformer-and-self-attention.md、sources/external-vaswani-2017-attention-is-all-you-need.md</span>
+        <span>Slide 8 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 9: 怎麼運作 (位置編碼、Multi-Head/Mask 與 ResNet/LayerNorm) ==================== -->
+    <section class="slide" data-stage="2">
+      <div class="slide-header">
+        <span class="section-tag">段落三：怎麼運作（How It Works — 機制 4：完整 Transformer 穩定架構）</span>
+        <h2 class="slide-title">讓 Transformer 完整且穩定：位置編碼時鐘、多頭遮罩與殘差正規化</h2>
+        <p class="slide-subtitle">補齊平行運算缺少的順序感、防止偷看未來答案，並讓深層網路平順收斂</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-3">
+          <div class="card">
+            <h3 class="amber">🕰️ 1. 位置編碼（Positional Encoding）</h3>
+            <p>平行 Self-Attention 本身不分先後順序，需在詞向量加上位置向量 <i>x<sub>t</sub> + p<sub>t</sub></i>：</p>
+            <div class="math-box" style="font-size:0.92rem;">
+              <span><i>ω<sub>k</sub></i> = 1 / 10000<sup>2<i>k</i>/<i>d</i></sup><br><i>p</i><sub>2<i>k</i></sub> = sin(<i>ω<sub>k</sub>t</i>), <i>p</i><sub>2<i>k</i>+1</sub> = cos(<i>ω<sub>k</sub>t</i>)</span>
+            </div>
+            <ul>
+              <li><strong class="hl">單位圓時鐘直覺：</strong>每組 (sin, cos) 就像單位圓上的順時鐘指針（低位元快、高位元慢，且數值介於 [−1, 1] 不蓋過原詞向量）。</li>
+              <li><strong class="hl">相對位置線性性質：</strong><i>PE<sub>pos+k</sub></i> 可表為 <i>PE<sub>pos</sub></i> 的線性函數，易於學習相對位置與外插。</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3 class="indigo">🎭 2. Multi-Head 與三種 Attention</h3>
+            <p>原版 Base 模型設 <i>N</i>=6 層、<i>d</i><sub>model</sub>=512、<b><i>h</i>=8 個注意力頭</b>（每頭 <i>d<sub>k</sub>=d<sub>v</sub></i>=64），平行計算後 Concat 乘上 <i>W<sup>O</sup></i>：</p>
+            <ul>
+              <li><strong class="emerald">Encoder Self-Attention：</strong><i>Q, K, V</i> 全由輸入向量自家生產，雙向理解上下文。</li>
+              <li><strong class="rose">Decoder Masked Self-Attention：</strong>將未來位置設為 <b>−∞</b>（Mask 遮住），保持自回歸不偷看答案。</li>
+              <li><strong class="blue">Decoder 中間層（非 Self-Attention）：</strong><i>Q</i> 來自 Decoder 前一層，<i>K, V</i> 來自 Encoder 輸出（文字生圖亦藉此混入文字特徵）。</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3 class="emerald">🛡️ 3. ResNet 殘差連結與正規化演進</h3>
+            <p>每個子層輸出皆為 <code>LayerNorm(x + Sublayer(x))</code>：</p>
+            <div class="math-box" style="font-size:0.95rem;">
+              <span><i>z</i> + <i>ℓ</i>(<i>z</i>) ≃ <i>f</i>(<i>z</i>) ⟹ <i>ℓ</i>(<i>z</i>) = <i>f</i>(<i>z</i>) − <i>z</i></span>
+            </div>
+            <ul>
+              <li><strong class="hl">ResNet 殘差連結：</strong>網路只需學習「之前還沒學到的殘差」，使損失函數地形（Loss Landscape）極度平順。</li>
+              <li><strong class="hl">正規化演進：</strong>
+                <br>• 原版：<b>LayerNorm</b> <i>(x−μ)/√(σ²+ε)·γ+β</i>
+                <br>• Llama 等：<b>RMSNorm</b>（省去減平均值 <i>μ</i>）
+                <br>• Meta 最新：<b>DyT</b> <i>γ·tanh(αx)+β</i></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/transformer-architecture-and-stability.md、sources/external-vaswani-2017-attention-is-all-you-need.md</span>
+        <span>Slide 9 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 10: 例子 (三個真實案例串聯) ==================== -->
+    <section class="slide" data-stage="3">
+      <div class="slide-header">
+        <span class="section-tag">段落四：例子（Examples — 從影像分類到大型語言模型）</span>
+        <h2 class="slide-title">具體數值與實作案例：看同一個函數原理如何貫穿所有 AI</h2>
+        <p class="slide-subtitle">從 3 維八哥分類、10 維 MNIST 手寫辨識，到上萬維字庫的 LLM 接話生成</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-3">
+          <div class="card">
+            <h3>🐦 案例 1：台灣八哥三分類</h3>
+            <ul>
+              <li><strong class="hl">輸入：</strong>1 張野外八哥彩色照片（3 階張量）。</li>
+              <li><strong class="hl">正解編碼：</strong>土八哥 One-hot 為 <code>[1, 0, 0]</code>。</li>
+              <li><strong class="hl">訓練前亂猜誤差：</strong>若模型輸出 <code>[0.23, 0.43, 0.34]</code>，單筆平方誤差和為：<br>
+                <code>(1−0.23)² + (0−0.43)² + (0−0.34)² = 0.89</code>。</li>
+              <li><strong class="hl">訓練後推論：</strong>輸出分數 <code>(1.9, 1.1, 0.2)</code> 經 Softmax 得 <code>(61%, 28%, 11%)</code>，取最高分判定為土八哥。</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3 class="emerald">✍️ 案例 2：MNIST 手寫數字 DNN</h3>
+            <ul>
+              <li><strong class="hl">資料集：</strong>NIST 修改版手寫數字集（0～9）。</li>
+              <li><strong class="hl">輸入拉平：</strong><i>28 × 28</i> 灰階影像拉平並正規化為 <b>784 維向量</b>。</li>
+              <li><strong class="hl">網路結構（Keras Sequential）：</strong>
+                <br>• 隱藏層 1：100 個神經元（ReLU）
+                <br>• 隱藏層 2：100 個神經元（ReLU）
+                <br>• 輸出層：<b>10 維 Softmax</b>（對應 10 維 One-hot）</li>
+              <li><strong class="hl">訓練：</strong>設定 Loss、以 <code>SGD</code>（梯度下降）設定 learning rate、<code>batch_size</code> 與 <code>epochs</code> 訓練完成。</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3 class="amber">📚 案例 3：LLM 字元接龍與規模奇蹟</h3>
+            <ul>
+              <li><strong class="hl">單步評分實例：</strong>輸入 <code>"炎龍老師很"</code>，對字庫編號（<code>帥=87, 幽=94, 有=112, 熱=174, 受=221</code>）打分 <code>[1.40, 0.03, 1.71, -0.73, 0.95]</code> → Softmax 得 <code>[30%, 7%, 40%, 4%, 19%]</code> 抽樣接龍。</li>
+              <li><strong class="hl">規模演進：</strong>課堂《紅樓夢》生成器（300 萬參數，能把孫悟空寫進賈府）→ GPT-2（15 億）→ <b>GPT-3（1,750 億參數，讀 4,990 億字）</b>。</li>
+              <li><strong class="hl">閱讀量對比：</strong>人類一生閱讀約 1B（10 億字），而 <b>Llama 3 訓練資料達 15T（人類一生的 1.5 萬倍）</b>！</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、concepts/neural-networks-and-learning.md、concepts/transformer-and-self-attention.md</span>
+        <span>Slide 10 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 11: 常見誤解 (五大迷思釐清) ==================== -->
+    <section class="slide" data-stage="4">
+      <div class="slide-header">
+        <span class="section-tag">段落五：常見誤解（Common Misconceptions）</span>
+        <h2 class="slide-title">初學者最容易搞混的五大迷思 vs. 原理真相</h2>
+        <p class="slide-subtitle">破除「背資料學 AI」的似是而非說法，建立精確的數學與工程直覺</p>
+      </div>
+
+      <div class="slide-body">
+        <table class="data-table" style="font-size:0.88rem;">
+          <thead>
+            <tr>
+              <th style="width:36%;">❌ 初學者常見誤解</th>
+              <th style="width:64%;">✅ 底層原理真相（依據 Wiki 知識庫）</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong class="rose">誤解 1：</strong>「鑑別式 AI 與生成式 AI 原理完全不同；因為生成式 AI 有幻覺，有時要改用鑑別式 AI。」</td>
+              <td>兩者在底層<strong class="emerald">原理上完全一樣</strong>！都是神經網路 <i>f<sub>θ</sub></i> 經 Softmax 輸出條件機率分佈，差別只在於最後是「固定挑最高分（argmax）」還是「依機率抽樣生成下一個字」。</td>
+            </tr>
+            <tr>
+              <td><strong class="rose">誤解 2：</strong>「幻覺（Hallucination）是 LLM 程式設計失敗的錯誤（Bug）。」</td>
+              <td>Karpathy (2015) 指出 LLM 本質上是<strong class="emerald">「作夢的機器」</strong>——搜尋引擎是 0% 的夢境但不會創造；幻覺正是 LLM 所做的全部，是它最具創造力的特點（只是當助理用時我們不希望它作夢）。</td>
+            </tr>
+            <tr>
+              <td><strong class="rose">誤解 3：</strong>「把 Temperature 調高（τ &gt; 1）能讓模型考慮更周全、算得更準。」</td>
+              <td>調高 <b>τ &gt; 1</b> 只是把指数 <i>e<sup>a/τ</sup></i> 的分數差距拉近，讓低分候選字更容易被抽中（<strong class="amber">更隨機</strong>）；若希望答案穩定一致，反而應調低 <b>τ &lt; 1</b>。</td>
+            </tr>
+            <tr>
+              <td><strong class="rose">誤解 4：</strong>「Transformer 裡每一層的 Attention 都是 Self-Attention（自注意力）。」</td>
+              <td>在標準 Encoder-Decoder 架構中，<strong class="emerald">Decoder 中間那層不是 Self-Attention</strong>！它的 <i>Q</i> 來自 Decoder 前一層，但 <i>K, V</i> 來自 Encoder 輸出（跨模態文字生圖亦同）。</td>
+            </tr>
+            <tr>
+              <td><strong class="rose">誤解 5：</strong>「深度學習就只是把沒學過的點補起來的高維度內插法（Interpolation）。」</td>
+              <td>Balestriero, Pesenti, &amp; LeCun (2021) 證明：在<strong class="emerald">高維度空間</strong>中的機器學習，幾何本質上總是<strong class="hl">外插（Extrapolation）</strong>！</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/probability-entropy-and-sampling.md、concepts/word-embedding-and-sampling-strategies.md、concepts/transformer-and-self-attention.md、concepts/transformer-architecture-and-stability.md</span>
+        <span>Slide 11 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 12: 小結 (全景概念串接與 Prompt 必殺技) ==================== -->
+    <section class="slide" data-stage="5">
+      <div class="slide-header">
+        <span class="section-tag">段落六：小結（Summary — 全景概念串接）</span>
+        <h2 class="slide-title">重點總結：一張圖串起「從函數到 Transformer」與 Prompt 必殺技</h2>
+        <p class="slide-subtitle">理解了這條知識鏈，你就掌握了現代生成式 AI 的核心引擎</p>
+      </div>
+
+      <div class="slide-body">
+        <!-- SVG Flowchart connecting all 5 Concept pages -->
+        <div class="card" style="padding:12px 16px;">
+          <svg viewBox="0 0 1100 155" width="100%" height="145" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+              </marker>
+            </defs>
+            <!-- Node 1 -->
+            <rect x="10" y="18" width="195" height="118" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+            <text x="107" y="45" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">1. 函數映射 f_θ</text>
+            <text x="107" y="68" fill="#cbd5e1" font-size="12" text-anchor="middle">呆萌型 AI 機器人</text>
+            <text x="107" y="88" fill="#cbd5e1" font-size="12" text-anchor="middle">輸入/輸出皆為 Tensor</text>
+            <text x="107" y="110" fill="#94a3b8" font-size="11" text-anchor="middle">Softmax 轉為機率分佈</text>
+            <line x1="205" y1="77" x2="232" y2="77" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+            <!-- Node 2 -->
+            <rect x="235" y="18" width="195" height="118" rx="12" fill="#0f172a" stroke="#818cf8" stroke-width="2"/>
+            <text x="332" y="45" fill="#818cf8" font-size="14" font-weight="bold" text-anchor="middle">2. 神經網路與學習</text>
+            <text x="332" y="68" fill="#cbd5e1" font-size="12" text-anchor="middle">神經元 h = φ(∑w_i x_i + b)</text>
+            <text x="332" y="88" fill="#cbd5e1" font-size="12" text-anchor="middle">損失函數 L(θ) 評估差距</text>
+            <text x="332" y="110" fill="#94a3b8" font-size="11" text-anchor="middle">梯度下降 θ ← θ − η∇L</text>
+            <line x1="430" y1="77" x2="457" y2="77" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+            <!-- Node 3 -->
+            <rect x="460" y="18" width="195" height="118" rx="12" fill="#0f172a" stroke="#34d399" stroke-width="2"/>
+            <text x="557" y="45" fill="#34d399" font-size="14" font-weight="bold" text-anchor="middle">3. 熵與隨機抽樣</text>
+            <text x="557" y="68" fill="#cbd5e1" font-size="12" text-anchor="middle">Cross Entropy −log ŷ_i</text>
+            <text x="557" y="88" fill="#cbd5e1" font-size="12" text-anchor="middle">潛張量 z 與機率抽樣</text>
+            <text x="557" y="110" fill="#94a3b8" font-size="11" text-anchor="middle">打破一對多四不像平均</text>
+            <line x1="655" y1="77" x2="682" y2="77" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+            <!-- Node 4 -->
+            <rect x="685" y="18" width="195" height="118" rx="12" fill="#0f172a" stroke="#fbbf24" stroke-width="2"/>
+            <text x="782" y="45" fill="#fbbf24" font-size="14" font-weight="bold" text-anchor="middle">4. 詞嵌入與選字旋鈕</text>
+            <text x="782" y="68" fill="#cbd5e1" font-size="12" text-anchor="middle">Word Embedding (W^T x = h)</text>
+            <text x="782" y="88" fill="#cbd5e1" font-size="12" text-anchor="middle">Temperature τ 調陡峭度</text>
+            <text x="782" y="110" fill="#94a3b8" font-size="11" text-anchor="middle">Top-k 與 Top-p 動態截斷</text>
+            <line x1="880" y1="77" x2="907" y2="77" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+            <!-- Node 5 -->
+            <rect x="910" y="18" width="180" height="118" rx="12" fill="#0f172a" stroke="#fb7185" stroke-width="2"/>
+            <text x="1000" y="45" fill="#fb7185" font-size="14" font-weight="bold" text-anchor="middle">5. Transformer</text>
+            <text x="1000" y="68" fill="#cbd5e1" font-size="12" text-anchor="middle">softmax(QK^T / √d_k)V</text>
+            <text x="1000" y="88" fill="#cbd5e1" font-size="12" text-anchor="middle">Positional Encoding 時鐘</text>
+            <text x="1000" y="110" fill="#94a3b8" font-size="11" text-anchor="middle">ResNet 殘差 + LayerNorm</text>
+          </svg>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="emerald">🔑 原理如何指導實務？寫好 Prompt 的兩大重點</h3>
+            <p>既然 LLM 是根據前面字預測下一個字機率 <i>P<sub>θ</sub>(w<sub>i</sub> | x<sub>1</sub>, …, x<sub>T</sub>)</i> 的接話機器，它並不知道你腦中的背景。因此寫好 Prompt（與 Context Engineering）只有兩個重點：</p>
+            <ol>
+              <li><strong class="hl">正確的資訊：</strong>把專屬背景資料、限制條件講清楚（錨定正確的上下文機率空間）。</li>
+              <li><strong class="hl">清楚的指引：</strong>要把任務目標、輸出格式、目標受眾講明白。</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h3 class="amber">🤝 Prompt 必殺技：和 AI 一起寫規格書！</h3>
+            <ol>
+              <li>先給陽春方向並補充<strong class="hl">只有你知道的專屬背景內容</strong>。</li>
+              <li><strong class="hl">請 AI 訪問你：</strong>問還有哪些需要釐清的地方。</li>
+              <li>請 AI 根據討論<strong class="hl">整理成結構化草稿／規格書（先不要直接寫成品）</strong>。</li>
+              <li><strong class="emerald">人工親自閱讀並修改：</strong>只要是 AI 生成的，務必自己讀過把關！</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、concepts/neural-networks-and-learning.md、concepts/probability-entropy-and-sampling.md、concepts/transformer-and-self-attention.md</span>
+        <span>Slide 12 / 13</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 13: 自我檢測 (5 題互動小測驗) ==================== -->
+    <section class="slide" data-stage="6">
+      <div class="slide-header">
+        <span class="section-tag">段落七：自我檢測（Self-Check Quiz — 點擊選項立即驗證）</span>
+        <h2 class="slide-title">自我檢測：5 題核心觀念闖關（附 Wiki 可追溯解析）</h2>
+        <p class="slide-subtitle">點擊選項測試你的理解程度，或點擊「顯示全部解析」對照來源 Wiki 頁</p>
+      </div>
+
+      <div class="slide-body" style="justify-content:flex-start;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span id="quizScore" style="font-size:0.9rem; font-weight:700; color:var(--accent-emerald);">目前答對：0 / 5 題</span>
+          <button class="btn" onclick="revealAllQuiz()">顯示 / 隱藏全部解析</button>
+        </div>
+
+        <div class="quiz-grid">
+          <!-- Q1 -->
+          <div class="quiz-item">
+            <div class="quiz-q">Q1. 若直接拿同一個提示詞「一個可愛的女孩」對應 100 張不同女孩照片硬訓練一般函數 f_θ，會發生什麼事？</div>
+            <div class="quiz-opts">
+              <button class="btn" onclick="answerQuiz(1, false, this)">A. 自動學會隨機生成 100 種女孩</button>
+              <button class="btn" onclick="answerQuiz(1, true, this)">B. 違反函數一對一/多對一，輸出 100 張照片的四不像平均</button>
+            </div>
+            <div class="quiz-ans" id="qAns1">
+              ✅ <b>正解 B：</b>一對多不是函數！硬訓練會得到所有可能輸出的算術平均（四不像），因此需引入潛張量 <i>z</i> 或機率分佈抽樣。<br>
+              <span style="color:#93c5fd;">[來源 Wiki：concepts/probability-entropy-and-sampling.md]</span>
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="quiz-item">
+            <div class="quiz-q">Q2. 在分類問題（正解 y=[1,0,0]）中，兩次預測 [0.7, 0.19, 0.11] 與 [0.7, 0.3, 0] 的 Cross Entropy 關係為何？</div>
+            <div class="quiz-opts">
+              <button class="btn" onclick="answerQuiz(2, true, this)">A. 兩者相等（皆為 −log 0.7 ≈ 0.36），因只看正確類別機率</button>
+              <button class="btn" onclick="answerQuiz(2, false, this)">B. 前者較小（0.14 vs. 0.18），因錯誤類別較平均</button>
+            </div>
+            <div class="quiz-ans" id="qAns2">
+              ✅ <b>正解 A：</b>One-hot 下 Cross Entropy 簡化為 <i>−log ŷ<sub>i</sub></i>，兩者對第一類皆預測 0.7 故同為 0.36（0.14 vs. 0.18 是 MSE 的結果）。<br>
+              <span style="color:#93c5fd;">[來源 Wiki：concepts/probability-entropy-and-sampling.md]</span>
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="quiz-item">
+            <div class="quiz-q">Q3. 當我們希望 LLM 每次生成的文字更固定、更一致（減少胡言亂語）時，應如何調整 Temperature τ？</div>
+            <div class="quiz-opts">
+              <button class="btn" onclick="answerQuiz(3, false, this)">A. 調高 τ &gt; 1（如 τ = 2），拉近分數差距</button>
+              <button class="btn" onclick="answerQuiz(3, true, this)">B. 調低 τ &lt; 1（如 τ = 0.5），拉開高低分差距</button>
+            </div>
+            <div class="quiz-ans" id="qAns3">
+              ✅ <b>正解 B：</b>在 <i>e<sup>a/τ</sup></i> 中，<i>τ &lt; 1</i> 會進一步拉開分數差距（例如 [4.3, 3.4, 0.2] 在 τ=0.5 時第一名機率從 70% 升至 86%），使輸出更固定。<br>
+              <span style="color:#93c5fd;">[來源 Wiki：concepts/word-embedding-and-sampling-strategies.md]</span>
+            </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="quiz-item">
+            <div class="quiz-q">Q4. Transformer 的 Scaled Dot-Product Attention 為什麼要將內積 QK^T 除以 √d_k？</div>
+            <div class="quiz-opts">
+              <button class="btn" onclick="answerQuiz(4, true, this)">A. 內積變異數為 d_k，除以 √d_k 可把數值拉回 0 附近，避免 Softmax 贏者通吃與梯度消失</button>
+              <button class="btn" onclick="answerQuiz(4, false, this)">B. 為了取代 Positional Encoding 計算字的位置順序</button>
+            </div>
+            <div class="quiz-ans" id="qAns4">
+              ✅ <b>正解 A：</b>Vaswani et al. (2017) 證明內積變異數為 <i>d<sub>k</sub></i>，數值過大會推入 Softmax 極小梯度區（贏者通吃），除以 √<i>d<sub>k</sub></i> 將變異數壓回 1。<br>
+              <span style="color:#93c5fd;">[來源 Wiki：concepts/transformer-and-self-attention.md]</span>
+            </div>
+          </div>
+
+          <!-- Q5 (Full width) -->
+          <div class="quiz-item" style="grid-column: 1 / -1;">
+            <div class="quiz-q">Q5. 關於標準 Transformer 的 Encoder 與 Decoder 注意力層，下列敘述何者正確？</div>
+            <div class="quiz-opts">
+              <button class="btn" onclick="answerQuiz(5, false, this)">A. 所有層的 Q, K, V 都是由該層輸入向量自己產生的 Self-Attention</button>
+              <button class="btn" onclick="answerQuiz(5, true, this)">B. Decoder 第一層會將未來位置設為 −∞（Mask 遮住），且 Decoder 中間層的 Q 來自 Decoder、K 與 V 來自 Encoder（非 Self-Attention）</button>
+            </div>
+            <div class="quiz-ans" id="qAns5">
+              ✅ <b>正解 B：</b>Decoder 第一層使用 Masked Self-Attention（設為 −∞ 防止偷看未來字），而 Decoder 中間層是檢索 Encoder 先備知識 <i>K, V</i> 的 Cross-Attention，並非 Self-Attention！<br>
+              <span style="color:#93c5fd;">[來源 Wiki：concepts/transformer-architecture-and-stability.md]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、concepts/neural-networks-and-learning.md、concepts/probability-entropy-and-sampling.md、concepts/word-embedding-and-sampling-strategies.md、concepts/transformer-and-self-attention.md、concepts/transformer-architecture-and-stability.md</span>
+        <span>Slide 13 / 13</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <footer class="bottombar">
+    <button class="btn" id="prevBtn" onclick="changeSlide(-1)">◀ 上一頁 (←)</button>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <button class="btn" id="nextBtn" onclick="changeSlide(1)">下一頁 (→) ▶</button>
+  </footer>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('section.slide'));
+    const pills = Array.from(document.querySelectorAll('.stage-pill'));
+    const counterEl = document.getElementById('slideCounter');
+    const progressEl = document.getElementById('progressFill');
+    let currentIndex = 0;
+
+    function updateDeck() {
+      slides.forEach((s, idx) => {
+        s.classList.toggle('active', idx === currentIndex);
+      });
+      const stageIdx = parseInt(slides[currentIndex].getAttribute('data-stage'), 10);
+      pills.forEach((p, idx) => {
+        p.classList.toggle('active', idx === stageIdx);
+      });
+      counterEl.textContent = `${currentIndex + 1} / ${slides.length}`;
+      progressEl.style.width = `${((currentIndex + 1) / slides.length) * 100}%`;
+    }
+
+    function changeSlide(delta) {
+      const next = currentIndex + delta;
+      if (next >= 0 && next < slides.length) {
+        currentIndex = next;
+        updateDeck();
+      }
+    }
+
+    function goToSlide(index) {
+      if (index >= 0 && index < slides.length) {
+        currentIndex = index;
+        updateDeck();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        changeSlide(1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        changeSlide(-1);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        goToSlide(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        goToSlide(slides.length - 1);
+      }
+    });
+
+    // Slide 7 Interactive Temperature Simulator (using exact Lecture 04 p.57 numbers)
+    function setTau(tau) {
+      document.getElementById('tauBtn05').classList.toggle('active', tau === 0.5);
+      document.getElementById('tauBtn10').classList.toggle('active', tau === 1.0);
+      document.getElementById('tauBtn20').classList.toggle('active', tau === 2.0);
+      const desc = document.getElementById('tauDesc');
+      const b1 = document.getElementById('tauBar1');
+      const b2 = document.getElementById('tauBar2');
+      const b3 = document.getElementById('tauBar3');
+      const v1 = document.getElementById('tauVal1');
+      const v2 = document.getElementById('tauVal2');
+      const v3 = document.getElementById('tauVal3');
+
+      if (tau === 0.5) {
+        desc.textContent = '目前設定：τ = 0.5（低溫 < 1）— 進一步拉開分數差距，生成文字更固定一致！';
+        b1.style.width = '86%'; v1.textContent = '86%';
+        b2.style.width = '14%'; v2.textContent = '14%';
+        b3.style.width = '0%';  v3.textContent = '0%';
+      } else if (tau === 2.0) {
+        desc.textContent = '目前設定：τ = 2.0（高溫 > 1）— 拉近彼此分數差距，選字更隨機、更具變化！';
+        b1.style.width = '57%'; v1.textContent = '57%';
+        b2.style.width = '36%'; v2.textContent = '36%';
+        b3.style.width = '7%';  v3.textContent = '7%';
+      } else {
+        desc.textContent = '目前設定：τ = 1.0 — 標準 Softmax 指數轉換（具「贏者通吃」特性）';
+        b1.style.width = '70%'; v1.textContent = '70%';
+        b2.style.width = '29%'; v2.textContent = '29%';
+        b3.style.width = '1%';  v3.textContent = '1%';
+      }
+    }
+
+    // Slide 8 Interactive sqrt(d_k) Scaling Toggle (using exact Lecture 05 p.32-33 numbers)
+    function toggleDk(scaled) {
+      document.getElementById('dkBtnRaw').classList.toggle('active', !scaled);
+      document.getElementById('dkBtnScaled').classList.toggle('active', scaled);
+      const title = document.getElementById('dkTitle');
+      const data = scaled
+        ? {
+            t: '除以 √5 後 [1.74, 1.43, 0.45, 0.13, 0.49] ──Softmax──▶ 數字拉回 0 附近，權重分佈合理平滑！',
+            labels: ['位置 1 (1.74)', '位置 2 (1.43)', '位置 3 (0.45)', '位置 4 (0.13)', '位置 5 (0.49)'],
+            vals: [40, 29, 11, 8, 11]
+          }
+        : {
+            t: '原始內積 [3.9, 3.2, 1, 0.3, 1.1] ──Softmax──▶ 前兩名明明只差一點，權重卻差一倍！',
+            labels: ['位置 1 (3.9)', '位置 2 (3.2)', '位置 3 (1.0)', '位置 4 (0.3)', '位置 5 (1.1)'],
+            vals: [61, 30, 3, 2, 4]
+          };
+      title.textContent = data.t;
+      for (let i = 0; i < 5; i++) {
+        document.getElementById('dkL' + (i + 1)).textContent = data.labels[i];
+        document.getElementById('dkB' + (i + 1)).style.width = data.vals[i] + '%';
+        document.getElementById('dkV' + (i + 1)).textContent = data.vals[i] + '%';
+      }
+    }
+
+    // Slide 13 Quiz Logic
+    const quizState = {};
+    function answerQuiz(qNo, isCorrect, btnEl) {
+      quizState[qNo] = isCorrect;
+      const ansEl = document.getElementById('qAns' + qNo);
+      ansEl.classList.add('visible');
+      const parent = btnEl.parentElement;
+      Array.from(parent.querySelectorAll('.btn')).forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+      const totalCorrect = Object.values(quizState).filter(Boolean).length;
+      document.getElementById('quizScore').textContent = `目前答對：${totalCorrect} / 5 題`;
+    }
+
+    function revealAllQuiz() {
+      const allAns = Array.from(document.querySelectorAll('.quiz-ans'));
+      const anyHidden = allAns.some(el => !el.classList.contains('visible'));
+      allAns.forEach(el => el.classList.toggle('visible', anyHidden));
+    }
+
+    updateDeck();
+  </script>
+</body>
+</html>

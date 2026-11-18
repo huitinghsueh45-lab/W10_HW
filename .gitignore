@@ -1,0 +1,29 @@
+# 系統與快取
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+desktop.ini
+*.bak
+
+# 虛擬環境
+venv/
+.venv/
+env/
+
+# 環境變數與金鑰（絕對不要推上 GitHub）
+.env
+*.pem
+credentials.json
+
+# IDE 與編輯器暫存
+.vscode/
+.idea/
+
+# 作業規劃與內部協作紀錄（不推上 GitHub）
+.HW_Plan/
+HW_Plan/
+TASK_LOG.md
+
+# 排除超過 GitHub 50MB/100MB 限制之大型課程講義 PDF（唯讀原始檔保留於本地）
+raw/lectures/*.pdf

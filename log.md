@@ -249,5 +249,28 @@
   - **流程教訓**：B4／B5 驗證必須包含**線上實測（含無痕視窗）**，不能只憑本機雙擊開啟即判定部署成功。
 - **本次提交**：`Add graph v2, independent reviewer run 2, and report fixes`（推送至 `origin/main` 並驗證 GitHub Actions `pages-build-deployment` 狀態）。
 
+---
+
+## 2026-11-19 16:12 CLOSURE｜check_sources.py 21 行逐項處理、check_numbers.py 規則調整揭露與文件同步
+- **節點**：`A4a`（Retry #2 透明化收尾）→ `C1`（報告用語與協作透明度更新，**不動第五節反思**）
+- **一、`check_sources.py` 原 21 行缺漏之逐項處置（詳見 `checks/scripts-run2-20261119-retry2.md`）**：
+  - **補齊 `[來源: 檔名 p.X]`（共 5 行，均已回查 `raw/` PDF 原頁確認）**：
+    1. `wiki/concepts/probability-entropy-and-sampling.md` L34（One-hot 交叉熵簡化）→ 補 `[來源: 03AI為什麼每次都不一樣？.pdf p.68, p.78-80]`
+    2. `wiki/concepts/probability-entropy-and-sampling.md` L61（`[0.6, 0.3, 0.1]` 機率分佈實例）→ 補 `[來源: 03AI為什麼每次都不一樣？.pdf p.93-94]`
+    3. `wiki/concepts/transformer-and-self-attention.md` L14–16（`"今天天氣很好。"` 一對多例子與兩式對應）→ 逐行補 `[來源: 04LLM只是在猜下一個字？.pdf p.10]`
+  - **明文豁免（共 16 行，已於 `scripts/check_sources.py` 檔頭與執行輸出逐行標記 `[EXEMPT:R1~R4]`，未靜默放寬）**：
+    - `R1`（純引導句／提問句，下文各條已標來源）：3 行（`function-mapping.md` L44、`neural-networks-and-learning.md` L54、`word-embedding-and-sampling-strategies.md` L33）
+    - `R2`（常見誤解標題列，下一行「事實」已標來源）：8 行（4 篇概念頁各 2 行）
+    - `R3`（專案角色元資訊列，非原文陳述）：1 行（`external-vaswani-2017-attention-is-all-you-need.md` L14）
+    - `R4`（跨來源交叉查核對照表，各欄已內嵌頁碼但採表格欄位格式）：4 行（`external-vaswani-2017-attention-is-all-you-need.md` L65–68）
+  - **重跑結果**：`FILES=12, FILES_FAIL=0, CHECKED_LINES=344, ISSUES=0, EXEMPTED=16 (R1=3, R2=8, R3=1, R4=4)`（Exit 0）。
+- **二、`check_numbers.py` 規則調整透明揭露**：
+  - `check_numbers.py` 初跑為 `FAIL=1`（`L04 p.17-18` 的 `7.53%` 原文下修捨成 `7%` 以湊滿 100%）。
+  - 後續於 `2026-11-19 15:20` 修改該條檢查邏輯使結果轉為 `PASS=24, FAIL=0`，在此明確標示：**這是「為容納已由使用者裁決之原文瑕疵（E3 `W-15`）而調整檢查規則」，不是修正 Wiki 的錯誤**。
+- **三、文件同步與報告用語修正**：
+  - 於 `README.md` 與 `TASK_LOG.md` 頂部補上時點與準據註記（以 `report.md` 為準）並更正過時描述；
+  - 更新 `report.md` 第二節用語（「Run 1 完成後的檢討發現」）、第四節補註腳本規則調整揭露、第六節新增 **Claude（對話式 AI）** 協作列（不直接操作檔案，由 Antigravity 執行）；第五節反思依指示未更動。
+  - **未執行 Git 提交或推送**（依使用者指示，後續全由使用者自行上傳）。
+
 
 

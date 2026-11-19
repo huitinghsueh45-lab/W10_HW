@@ -28,7 +28,7 @@
 
 ## 二、loop / graph 設計與修改前後演進
 
-本專案之工作流程歷經兩個真實演進版本：**Run 1 實際執行的是單一 AI 自查的 `graph v1`**；在 Run 1 完成並經唯讀稽核發現「寫作與審查共用上下文之盲點」與「單一退回路徑無法區分抽取錯誤／推論錯誤／原文矛盾」後，才於 **2026-11-19 正式導入 `graph v2`**（新增確定性檢查腳本、上下文隔離之獨立 Reviewer、依 `E1～E5` 錯誤碼分流退回與連續 3 次迴圈保護），並執行了完整的 Run 2。
+本專案之工作流程歷經兩個真實演進版本：**Run 1 實際執行的是單一 AI 自查的 `graph v1`**；在 Run 1 完成後的檢討發現「寫作與審查共用上下文之盲點」與「單一退回路徑無法區分抽取錯誤／推論錯誤／原文矛盾」後，才於 **2026-11-19 正式導入 `graph v2`**（新增確定性檢查腳本、上下文隔離之獨立 Reviewer、依 `E1～E5` 錯誤碼分流退回與連續 3 次迴圈保護），並執行了完整的 Run 2。
 
 ### 1. graph v1（Run 1 實際執行之原始流程：單一 AI 自查 Loop）
 
@@ -146,7 +146,7 @@ flowchart TD
 - **檢查與審查紀錄（`checks/`）**：
   - Run 1 Lint：[lint-20261118-01.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/lint-20261118-01.md) ～ [lint-20261118-06.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/lint-20261118-06.md)
   - 可追溯性與簡報驗證：[traceability.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/traceability.md)、[b4-slides-verification.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/b4-slides-verification.md)
-  - Run 2 腳本與獨立 Reviewer 審查：[scripts-run2-20261119.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/scripts-run2-20261119.md)、[review-run2-wiki.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/review-run2-wiki.md)、[review-run2-slides.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/review-run2-slides.md)
+  - Run 2 腳本與獨立 Reviewer 審查：[audit-run1-20261119.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/audit-run1-20261119.md)、[scripts-run2-20261119.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/scripts-run2-20261119.md)、[scripts-run2-20261119-retry2.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/scripts-run2-20261119-retry2.md)、[review-run2-wiki.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/review-run2-wiki.md)、[review-run2-slides.md](https://github.com/huitinghsueh45-lab/W10_HW/blob/main/checks/review-run2-slides.md)
 
 ---
 
@@ -187,7 +187,8 @@ Run 2 由獨立 Reviewer 於全新對話以**唯讀**權限執行：**階段 A�
 | **B4b 獨立 Reviewer（簡報）** | `slides/index.html` 13 頁全數普查＋互動重算＋5 題測驗 | **E4** | **12**（1*/7/4） | **`S-08`（高，E4+E5）**：Slide 7 Temperature 模擬器繞過 Wiki 直接看 `L04 p.57`，誤踩文字流倒置將標籤反標為 `c(4.3)/b(3.4)/a(0.2)`（實為 `a=4.3, b=3.4, c=0.2`）；另 `S-01, S-02, S-15` 混入非 Wiki 內容，`S-03~07, S-10~12, S-14` 頁尾漏列來源 → **退回 B1**（`S-10` 連動轉 `A4b`）全數修正 |
 | **B4b 獨立 Reviewer（簡報）** | 同上 | **E5** | **6**（1*/2*/3） | `S-08` 標籤倒置、`S-09` 未轉譯反引號 `` `p.57` ``、`S-12, S-14` 頁尾漏列與註解誤寫 `5 Concept pages`、`S-13` 簡體錯字「指数」、`S-16` Slide 1 頁碼格式不一 → **退回 B3** 全數修正，`verify_slides.py` 複檢 **PASS=35, FAIL=0** |
 
-*(註：簡報獨立異常去重後共 16 件，因 `S-08, S-12, S-14` 同時涉 E4 與 E5；`S-10` 同時連動階段 A 之 `W-06`。Slide 2、Slide 3、Slide 9 及 Slide 13 全部 5 題自我檢測答案與解析皆未發現事實錯誤。)*
+*(註 1：簡報獨立異常去重後共 16 件，因 `S-08, S-12, S-14` 同時涉 E4 與 E5；`S-10` 同時連動階段 A 之 `W-06`。Slide 2、Slide 3、Slide 9 及 Slide 13 全部 5 題自我檢測答案與解析皆未發現事實錯誤。)*  
+*(註 2：確定性腳本調整揭露 — ① `check_numbers.py` 初跑為 `FAIL=1`（`L04 p.17-18` 的 `7.53%` 原文捨成 `7%` 以湊滿 100%），後來為了容納已由使用者裁決的原文瑕疵（`W-15`），在腳本中加入該捨入規則（而非修正 Wiki 的錯誤）才轉為 `PASS=24, FAIL=0`；② `check_sources.py` 初跑檢出 21 行缺來源，經逐行核對 `raw/` 後補齊 5 行事實陳述之 `[來源: 檔名 p.X]`，另 16 行（純引導句 3、誤解標題 8、專案角色 1、跨來源比對表 4）於腳本開頭註解與 `checks/scripts-run2-20261119-retry2.md` 明文列舉豁免規則與豁免行數後，複檢為 `ISSUES=0, EXEMPTED=16`。)*
 
 ---
 
@@ -205,6 +206,7 @@ Run 2 由獨立 Reviewer 於全新對話以**唯讀**權限執行：**階段 A�
 | **Run 1 階段 A（6 篇 Ingest）** | 在每篇的 **A2 先討論**節點審閱重點清單與預計建立／更新之頁面，確認無誤後授權寫入。 | 分段讀取 60 頁以上長講義、撰寫 6 篇 `sources/` 與 **6 篇** `concepts/`、執行 6 次自查 Lint 並記錄錯誤與修正。 |
 | **Run 1 階段 B（簡報生成與部署）** | 在 **B2** 審閱 13 頁大綱與 `traceability.md`，於本機雙擊檢視 `slides/index.html` 並啟用 GitHub Pages。 | 撰寫單一自足 `slides/index.html`、修正第 13 頁頁尾前綴與 `.nojekyll` 並推送 GitHub。 |
 | **Run 2 流程升級與獨立審查** | 主持唯讀稽核、開啟全新獨立對話執行 Reviewer（A4b / B4b）、針對 **E3（`W-13`, `W-14`, `W-15`）** 裁決採用加註勘誤方案（選項 A），並親自完成 **B5 人工抽查 3 頁（Slide 3、5、6）**與無痕視窗線上實測。 | 建立 `graph v2` 規則與 5 支確定性 Python 腳本；依獨立 Reviewer 報告分流修正 E1/E2/E4/E5、落實 E3 人工裁決、重跑腳本驗證並更新 `log.md`、`traceability.md`、`b4-slides-verification.md` 與 `report.md`。 |
+| **跨 AI 規劃與交叉審閱（協作對象：Claude 對話式 AI）** | 使用者將 **Claude（對話式 AI）** 用於作業規劃書、流程設計討論、Run 2 的提示語設計，以及對報告與紀錄的交叉審閱，藉此跳脫單一執行環境之盲點。 | Claude 不直接操作專案檔案，所有程式撰寫、腳本驗證與專案檔案變更皆由 **Antigravity** 依使用者指示執行。 |
 
 ---
 

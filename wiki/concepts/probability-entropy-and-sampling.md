@@ -31,7 +31,7 @@ status: linted
 ### 3. 交叉熵（Cross Entropy）與 KL 散度（KL Divergence）
 - **交叉熵（Cross Entropy, $H(P, Q)$）**：衡量真實世界分佈 $P=(y_1, \dots, y_n)$ 與模型經 Softmax 預測出的機率分佈 $Q=(\hat{y}_1, \dots, \hat{y}_n)$ 之間的差距 `[來源: 03AI為什麼每次都不一樣？.pdf p.69, p.76-77]`：
   $$H(P, Q) = -\sum_{i=1}^n y_i \log \hat{y}_i$$
-  當真實答案 $y$ 為 One-hot encoding（第 $i$ 類 $y_i=1$、其餘為 0）時，交叉熵簡化為：
+  當真實答案 $y$ 為 One-hot encoding（第 $i$ 類 $y_i=1$、其餘為 0）時，交叉熵簡化為 `[來源: 03AI為什麼每次都不一樣？.pdf p.68, p.78-80]`：
   $$H(P, Q) = -\log \hat{y}_i$$
   其直覺意義為：**只看模型對「正確答案那一類」給出的機率 $\hat{y}_i$；若正確答案的模型預測機率很低，$-\log \hat{y}_i$ 趨近無窮大，模型就會受到「大扣分」**`[來源: 03AI為什麼每次都不一樣？.pdf p.67-68, p.78-80]`。
 - **KL 散度（Kullback-Leibler Divergence）**：當 $Q=P$ 時，交叉熵達到最小值 $H(P)$（不一定為 0）；將交叉熵扣除固定的真實分佈熵 $H(P)$，即得 $Q=P$ 時恆為 0 的 KL 散度 `[來源: 03AI為什麼每次都不一樣？.pdf p.83-85]`：
@@ -58,7 +58,7 @@ status: linted
    - **GAN（Goodfellow et al., 2014）** 讓生成器 $G(z)$ 與鑑別器 $D(x)$ 進行極小極大對抗：$\min_G \max_D V(D,G) = \mathbb{E}_{x\sim p_{\text{data}}}[\log D(x)] + \mathbb{E}_{z\sim p_z}[\log(1-D(G(z)))]$`[來源: 03AI為什麼每次都不一樣？.pdf p.18-29]`。
    - **StyleGAN** 進一步將 512 維的隨機潛向量 $z$ 轉為風格向量 $w$，經仿射轉換 $Aw+b=(y_s, y_b)$ 與 **AdaIN**（$\text{AdaIN}(x_i, y) = y_{s,i}\frac{x_i-\mu(x_i)}{\sigma(x_i)} + y_{b,i}$）在 $4\times 4$ 到 $1024\times 1024$ 各解析度層控制風格 `[來源: 03AI為什麼每次都不一樣？.pdf p.38, p.42-47]`。每次隨機抽取不同的 $z$，就生成一張世上不存在的新人臉 `[來源: 03AI為什麼每次都不一樣？.pdf p.48, p.92]`。
 2. **在輸出端依 Softmax 機率分佈隨機抽樣（以推薦系統與語言模型 LLM 為代表）**：
-   - 當神經網路經 Softmax 輸出機率分佈（如 $[0.6, 0.3, 0.1]$）時：
+   - 當神經網路經 Softmax 輸出機率分佈（如 $[0.6, 0.3, 0.1]$）時 `[來源: 03AI為什麼每次都不一樣？.pdf p.93-94]`：
      - 若採用**取最高分（argmax）**：每次都固定輸出第 1 類（適合八哥辨識）`[來源: 03AI為什麼每次都不一樣？.pdf p.93]`。
      - 若採用**依機率隨機抽樣（Probabilistic Sampling）**：以 60% 機率抽第 1 類、30% 機率抽第 2 類、10% 機率抽第 3 類 `[來源: 03AI為什麼每次都不一樣？.pdf p.94]`。
    - **語言模型（LLM）的核心機制**：語言模型在做的事情其實只有一件——**「看前面的一堆字，猜下一個字」**，數學上表示為條件機率分佈 $P_\theta(w_i \mid x_1, x_2, \dots, x_T)$ `[來源: 03AI為什麼每次都不一樣？.pdf p.96]` `[來源: 04LLM只是在猜下一個字？.pdf p.64]`。例如輸入「呆一布在」，模型經 Softmax 輸出所有候選字成為下一個字的機率（如「家 15%、桌 7%、玩 12%、裝 3%...」），再結合 Temperature、Top-k 或 Top-p 選字策略（詳見 [[word-embedding-and-sampling-strategies]]）依機率抽樣出下一個字，因此每次生成的句子都會不一樣 `[來源: 03AI為什麼每次都不一樣？.pdf p.96]` `[來源: 04LLM只是在猜下一個字？.pdf p.52, p.64]`。

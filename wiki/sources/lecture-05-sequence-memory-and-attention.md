@@ -2,7 +2,7 @@
 title: 05 AI 怎麼記得前面說過什麼？（來源摘要）
 type: source
 sources: [05AI怎麼記得前面說過什麼？.pdf]
-updated: 2026-11-18
+updated: 2026-11-19
 status: linted
 ---
 
@@ -37,7 +37,7 @@ status: linted
    - **Self-Attention（大家輪流當 $q$）**：每個 $x_t$ 除了產生 $k_t, v_t$ 外也產生自己的 $q_t$（由列向量矩陣乘法一次算出：$Q = X W^Q, K = X W^K, V = X W^V$），將所有 $q_i$ 排成矩陣 $Q$，即可一次平行算出所有位置的記憶輸出 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.27-30, p.34-35]`。
 2. **為什麼要除以 $\sqrt{d_k}$？（抑制 Softmax 贏者通吃）**：
    - Google 發現直接用內積 $\text{softmax}(QK^T)V$ 效果不如預期，主因是當數值偏大時，**Softmax 的「贏者通吃」特性會讓最高分權重比合理比例高出太多** `[來源: 05AI怎麼記得前面說過什麼？.pdf p.31]`。
-   - **數值實例**：原始分數 `[3.9, 3.2, 1, 0.3, 1.1]`（前兩名感覺只差一點），直接經 Softmax 卻變成 `[61%, 30%, 3%, 2%, 4%]` `[來源: 05AI怎麼記得前面說過什麼？.pdf p.32]`；若同除以 $\tau = \sqrt{d_k} = \sqrt{5} \approx 2.236$ 將數字拉回 0 附近，分數變為 `[1.74, 1.43, 0.45, 0.13, 0.49]`，經 Softmax 後即成為較平緩合理的 `[40%, 29%, 11%, 8%, 11%]` `[來源: 05AI怎麼記得前面說過什麼？.pdf p.33]`。
+   - **數值實例**：原始分數 `[3.9, 3.2, 1, 0.3, 1.1]`（前兩名感覺只差一點），直接經 Softmax 卻變成 `[61%, 30%, 3%, 2%, 4%]` `[來源: 05AI怎麼記得前面說過什麼？.pdf p.32]`；若同除以 $\tau = \sqrt{d_k}$ 將數字拉回 0 附近，分數變為 `[1.74, 1.43, 0.45, 0.13, 0.49]`，經 Softmax 後即成為較平緩合理的 `[40%, 29%, 11%, 8%, 11%]` `[來源: 05AI怎麼記得前面說過什麼？.pdf p.33]`（註：原文 `p.33` 未明列 $d_k$ 數值，依縮放前後比例反推投影片範例使用之縮放常數約為 $\sqrt{5} \approx 2.236$；另五項四捨五入後總和為 99%）。
    - 因此加入縮放因子 $\sqrt{d_k}$（其中 $d_k = \text{dim}(k_i)$，本質上就如同設定溫度超參數 $\tau = \sqrt{d_k}$）`[來源: 05AI怎麼記得前面說過什麼？.pdf p.31, p.33]`：
      $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
 3. **Multi-Head Attention 與 Encoder / Decoder 的三種注意力**：
@@ -53,6 +53,7 @@ status: linted
    - 觀察十進位數（如 `9487`，在向量中低位數寫在前面如 `[7, 8, 4, 9]`），位數越低變化頻率越高（頻率 $1$），位數越高週期越長、頻率越低（頻率 $1/10, 1/100, 1/1000$）`[來源: 05AI怎麼記得前面說過什麼？.pdf p.43, p.45]`。
    - 為了找一個連續、有週期性、且數值不大（介於 $[-1, 1]$ 以免蓋過原 embedding）的通用進位系統，原論文將位置向量 $p_t = [p_0, p_1, \dots, p_{d-1}]$ 兩兩一組設為同頻率 $\omega_k$（要求 $\omega_0 > \omega_1 > \dots$，越往後頻率越慢）`[來源: 05AI怎麼記得前面說過什麼？.pdf p.44, p.46-47]`：
      $$\omega_k = \frac{1}{10000^{2k/d}}, \quad p_i = \begin{cases} \sin(\omega_k \cdot t), & \text{當 } i = 2k \\ \cos(\omega_k \cdot t), & \text{當 } i = 2k+1 \end{cases}$$
+     （原文排版註記：投影片 `p.46` 提及原論文足標通常從 1 開始，實際對照 `Vaswani p.6` 係從 $i=0$ 開始；另 `p.48` 括號與 `p.49` 足標 $\omega_t t$ 存有排版筆誤，此處依標準數學式規範呈現 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.46-49]`。）
    - **為什麼同時要 $\sin$ 與 $\cos$？**：每一組 $(\sin(\omega_k t), \cos(\omega_k t))$ 剛好是單位圓上的一點，可想成**時鐘指針上的一個點**（當 $t=0$ 時指向 $(0, 1)$ 即一般時鐘 12 點方向，且隨 $t$ 增加呈順時鐘旋轉）；低位元的時鐘轉得快、高位元的時鐘轉得慢 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.48-50]`。
 
 ### 四、讓 Transformer 更深更穩的技術：ResNet 殘差連結與 Normalization
@@ -62,7 +63,7 @@ status: linted
    - Li et al. (NeurIPS 2018) *"Visualizing the Loss Landscape of Neural Nets"* 顯示，加入 skip connection 後，損失函數地形會從極度崎嶇變得非常平順好走 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.58]`。
 2. **從 Layer Normalization 到 RMSNorm 與 DyT**：
    - **Layer Normalization（原版 Transformer 採用）**：對單一樣本向量 $x=(x_1, \dots, x_n)$ 計算平均值 $\mu = \frac{1}{n}\sum_{i=1}^n x_i$ 與標準差 $\sigma = \sqrt{\frac{1}{n}\sum_{i=1}^n (x_i - \mu)^2}$，標準化為 $\hat{x} = \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}}$（$\epsilon$ 預防除以 0），再以學習而來的向量 $\gamma, \beta$ 調整為 $y_i = \gamma \hat{x}_i + \beta$ `[來源: 05AI怎麼記得前面說過什麼？.pdf p.60-62]`。（相較之下，Batch Normalization 則是跨樣本 $x_1, \dots, x_m$ 計算平均與標準差 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.59]`。）
-   - **RMSNorm（Llama 等現代 LLM 採用）**：省略平均值 $\mu$，只算均方根 $\text{RMS}(x) = \sqrt{\frac{1}{n}\sum_{i=1}^n x_i^2}$，並計算 $\text{RMSNorm}(x) = \frac{x}{\text{RMS}(x)} \cdot \gamma$ `[來源: 05AI怎麼記得前面說過什麼？.pdf p.64]`。
+   - **RMSNorm（Llama 等現代 LLM 採用）**：省略平均值 $\mu$，只算均方根 $\text{RMS}(x) = \sqrt{\frac{1}{n}\sum_{i=1}^n x_i^2}$，並計算 $\text{RMSNorm}(x) = \frac{x}{\text{RMS}(x)} \cdot \gamma$ `[來源: 05AI怎麼記得前面說過什麼？.pdf p.64]`（註：`p.64` 原圖 $\sum x^2$ 漏印足標 $i$，此處依標準式補齊）。
    - **Dynamic Tanh（DyT，Meta 提出）**：主張不需做 Normalization，直接以 $\text{DyT}(x) = \gamma \cdot \tanh(\alpha x) + \beta$（其中純量 $\alpha$ 初值可設為 $0.5$，$\gamma, \beta$ 為學習來的向量）取代 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.65]`。
 
 ### 五、Vibe Coding 單一檔案互動網頁實作

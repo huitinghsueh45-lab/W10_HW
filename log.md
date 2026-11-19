@@ -158,5 +158,96 @@
   - 將 GitHub 與 GitHub Pages 公開連結補入 `report.md` 第三節並推送至遠端儲存庫 `origin`（`https://github.com/huitinghsueh45-lab/W10_HW.git`）。
 - **產出**：更新 `.gitignore`、`report.md`、`README.md`、`TASK_LOG.md` 並完成 Git Commit & Push。
 
+---
+
+## 2026-11-19 14:20 GRAPH v2｜新增獨立 Reviewer 與依錯誤類型分流
+- **節點**：流程升級（Run 1 完成後導入 `graph v2`：新增 `A1.5`、`A4a/A4b`、`B4a/B4b`、條件分流 `E1~E5` 與連續 3 次迴圈保護）
+- **新增原因**：Run 1 的 Lint 與簡報抽查皆由同一個 AI 在同一上下文中自查，寫作與審查共用記憶容易產生盲點；且 Run 1 僅為單一路徑退回，未依錯誤類型分流，亦未將確定性檢查腳本納入版控。
+- **歷史不改寫聲明**：本 `graph v2` 規則、確定性檢查腳本與獨立 Reviewer 均於 **Run 1 完成之後（2026-11-19）才加入**；上方所有 Run 1 紀錄保持原樣、未做任何改寫。
+- **產出**：
+  - 更新 `AGENTS.md`（新增 `graph v2` 章節、節點與條件邊、`E1~E5` 錯誤分類碼、連續 3 次迴圈保護與獨立 Reviewer 規則）
+  - 新增 `scripts/check_numbers.py`（確定性數值與百分比總和驗算）
+  - 新增 `scripts/check_sources.py`（檢查 12 頁 Wiki 事實句來源與頁碼標註）
+  - 新增 `scripts/check_links.py`（檢查 `[[...]]` 交叉連結、`wiki/index.md` 與 YAML front matter）
+  - 新增 `scripts/verify_slides.py`（驗證 `slides/index.html` 單一自足性、頁尾來源、traceability 對齊與互動元件數據；Run 1 臨時版先前未納入版控）
+  - 新增 `checks/scripts-run2-20261119.md`（完整原樣保存 4 支腳本執行結果）
+- **確定性腳本初次執行結果（Run 2 / `A4a` + `B4a`，原樣紀錄、尚未修改 `wiki/`、`slides/`、`report.md`）**：
+  - `check_numbers.py`：**PASS=23, FAIL=1**（Exit 1）— 發現第 4 講 `p.17-18` 候選字 Softmax `[1.40, 0.03, 1.71, -0.73, 0.95]` 精確值為 `[29.64%, 7.53%, 40.41%, 3.52%, 18.90%]`，標準四捨五入為 `[30, 8, 40, 4, 19]`（總和 101%），而投影片與 Wiki 記為 `[30%, 7%, 40%, 4%, 19%]`（總和 100%）；其餘第 2、3、4、5 講數值（含 `p.82` MSE、`p.32-33` 與 $\sqrt{5}$ 縮放）皆通過。
+  - `check_sources.py`：**FILES=12, FILES_FAIL=7, CHECKED_LINES=341, ISSUES=21**（Exit 1）— 5 篇課程 `sources/` 全數通過；6 篇 `concepts/` 與 `external-vaswani-2017-attention-is-all-you-need.md` 共檢出 21 行未附 `[來源: 檔名 p.X]`（含引導句、誤解標題、`transformer-and-self-attention.md` L14-16 例子列、以及 `external-vaswani` 交叉比對表 L65-68 未採 `[來源: ...]` 格式）。
+  - `check_links.py`：**PASS=26, FAIL=0**（Exit 0）— 全數交叉連結、`wiki/index.md` 與 front matter 通過。
+  - `verify_slides.py`：**PASS=35, FAIL=0**（Exit 0）— 單一自足 HTML、13 頁頁尾來源與 `checks/traceability.md` 對齊、溫度模擬器與 $\sqrt{d_k}$ 切換器及 5 題自我檢測結構全數通過。
+- **下一步**：交由獨立新對話（全新 agent session）執行 **提示語 2（Reviewer 獨立審查）**，產出 `checks/review-run2-wiki.md` 與 `checks/review-run2-slides.md`。
+
+---
+
+## 2026-11-19 15:03 RUN 2｜獨立 Reviewer 審查與依錯誤類型分流修正（第 1 次重試）
+- **節點**：`A4b`（獨立 Reviewer 審查 Wiki）＋`B4b`（獨立 Reviewer 審查簡報）→ 依 `graph v2` 條件邊分流退回（`E1→A1`、`E2→A3`、`E3→A2 人工閘門`、`E4→B1`、`E5→B3`）→ `A4a / B4a` 腳本複檢（重試次數：**第 1 次**，未達連續 3 次迴圈保護上限）
+- **獨立 Reviewer 發現總覽**（詳見 `checks/review-run2-wiki.md` 與 `checks/review-run2-slides.md`）：
+  - **階段 A（Wiki，12 頁 × 8 項＝96 項抽樣，0 件無法確認）**：共 **15 件** — **E1 3 件**（`W-01` 高、`W-02` 中、`W-03` 中）、**E2 9 件**（`W-04`～`W-12`，含 `W-07` 高）、**E3 3 件**（`W-13` 中、`W-14` 中、`W-15` 低）；另附 2 處簡體字「与」。
+  - **階段 B（簡報，13 頁全數普查＋2 互動元件＋5 題測驗，0 件無法確認）**：共 **16 件獨立異常** — **E4 12 件**（`S-01`～`S-08`, `S-10`～`S-12`, `S-14`, `S-15`）、**E5 6 件**（`S-08`, `S-09`, `S-12`, `S-13`, `S-14`, `S-16`，其中 `S-08/S-12/S-14` 同涉 E4+E5；`S-10` 連動 Wiki `W-06`）。Slide 2、3、9 及 Slide 13 全部 5 題自我檢測答案與解析未發現事實錯誤。
+- **依錯誤類型分流處理與修正前後差異（第 1 次重試）**：
+  1. **E1 → 退回 `A1`（3 件：`W-01`, `W-02`, `W-03`）**：
+     - 補強 A1.5：新增 `scripts/precheck_pdf_coords.py`（依 PDF 視覺座標 `y` 由高到低重排並偵測文字流倒置，於 `L02 p.21/60/67`、`L03 p.82`、`L04 p.57` 全數成功檢出 `INVERSION_DETECTED`）。
+     - `W-01`（`wiki/sources/lecture-02-neural-networks.md` L52）：修正前誤寫「把家八哥照片猜成 72% 土八哥、12% 家八哥、16% 白尾八哥」→ 座標重抽後修正為「將土八哥照片猜成 16% 土八哥、12% 白尾八哥、72% 家八哥」。
+     - `W-02`, `W-03`（`lecture-02` L27、`function-mapping.md` L34）：修正前誤判 `p.67` 圖示順序對調 → 座標重抽確認 `p.67` 仍為「土八哥、白尾八哥、家八哥」，移除對 `p.67` 之誤判（僅保留 `p.21` 差異，其最終呈現方式併入 `W-13` 交人工決定）。
+  2. **E2 → 退回 `A3`（9 件：`W-04`～`W-12`＋2 簡體字）**：
+     - `W-04`（`lecture-02` L63）：移除反向傳播誤植頁碼 `p.104`，保留 `p.75`。
+     - `W-05`（`lecture-04` L30）：移除「炎龍老師很」評分誤植頁碼 `p.57`，保留 `p.17-18, p.50-51`；另於 `lecture-04` L59 與 `word-embedding` L45/49 依 `p.57` 座標重抽補齊原文分數代號 `a=4.3, b=3.4, c=0.2` 供簡報只讀 Wiki 引用。
+     - `W-06`（`lecture-05` L40，連動 `S-10`）：修正前將反推之 `√5 ≈ 2.236` 直接歸於 `p.33` 原文 → 改寫為忠實呈現原文 `τ = √d_k`，並獨立加註「原文未明列 $d_k$，依前後比例反推約為 $\sqrt{5}\approx 2.236$；四捨五入總和為 99%」。
+     - `W-07`（`transformer-architecture-and-stability.md` L36）：修正前合成公式左側 `(Q,K,V)` 與右側 `XW_n^Q` 變數衝突 → 改回對齊 Vaswani p.5 之 `Attention(QW_i^Q, KW_i^K, VW_i^V)`，並加註 Self-Attention 情境時記為 `XW_n`。
+     - `W-08`（同頁 L13）：刪除原文未載之「狗咬人／人咬狗」自創例句，改回 `L05 p.42` 原意。
+     - `W-09`（同頁 L35）：補齊 `Vaswani p.7, p.14` 頁碼以覆蓋語法／語意／指代陳述。
+     - `W-10`（同頁 L63-64）：刪除原文未載之「串接整數 1, 2, 3...」假想反例，改貼近 `L05 p.43-44` 十進位與有界週期原意。
+     - `W-11`（`word-embedding-and-sampling-strategies.md` L71）：刪除原文未出現之「稀疏向量／彼此正交」。
+     - `W-12`（`lecture-03` L27, L42）：LeCun 引語「最有趣」→「最重要（most important）」；拆開標示 Pix2Pix（Isola, 朱俊彦等人, CVPR 2017）與 CycleGAN（朱俊彦等人, ICCV 2017）。
+     - 同步修正 2 處簡體字「与」→「與」（`function-mapping.md` L51、`wiki/index.md` L8）。
+  3. **E3 → 退回 `A2` 人工閘門（3 件：`W-13`, `W-14`, `W-15`，暫停自動修改、等待使用者裁決）**：
+     - `W-13`：`L02 p.21` 原圖八哥順序與其餘頁不一致之 Wiki 註記方式；
+     - `W-14`：`L03 p.62, p.82` 原文稱為「MSE」實為未除以維度 3 之平方誤差和（SSE）是否加註；
+     - `W-15`：4 處原文四捨五入／符號排版瑕疵（含 `L04 p.18` `7.53%→7%`）是否逐一加註勘誤。
+  4. **E4 → 退回 `B1` & E5 → 退回 `B3`（16 件：`S-01`～`S-16`，於 `slides/index.html` 與 `checks/traceability.md` 同步修正）**：
+     - `S-01`, `S-02`, `S-16`（Slide 1）：移除非 Wiki 模型名單（Claude/Gemini/Grok）與「改變條件機率」，改忠實對齊頁尾 2 頁；右下角頁碼統一為 `Slide 1 / 13`。
+     - `S-03`, `S-04`（Slide 4）：移除頁尾未載的 `h_{t-1}, x_t, Self-Attention, 多模態生成` 及過度歸因「三巨頭指出」。
+     - `S-05`（Slide 5）：改為頁尾 Wiki 原載之「國王 — 男人 vs. 皇后 — 女人」等語意關係。
+     - `S-06`（Slide 6）：頁尾補列 `sources/lecture-02-neural-networks.md` 支援偏微分例題。
+     - `S-07`, `S-08`, `S-09`（Slide 7）：「咖啡推薦」→「推薦系統」；移除直接引用 raw 頁碼與未轉譯反引號 `` `p.57` ``；將顛倒的長條圖標籤 `候選字 c (4.3) / b (3.4) / a (0.2)` 修正為正確的 **`候選字 a (4.3) / b (3.4) / c (0.2)`**。
+     - `S-10`（Slide 8，連動 `W-06`）：移除 raw 頁碼 `(p.32-33)` 與 `√5 ≈ 2.236`，改為 `同除以 τ = √d_k（拉回 0 附近）` 並加註「四捨五入總和 99%」。
+     - `S-11`（Slide 10）：頁尾補列 `sources/lecture-02-neural-networks.md`、`sources/lecture-04-llm-next-token-prediction.md`。
+     - `S-12`, `S-13`（Slide 11）：頁尾補列 `concepts/neural-networks-and-learning.md`、`sources/lecture-04-llm-next-token-prediction.md`；修正簡體錯字「指数」→「指數」。
+     - `S-14`, `S-15`（Slide 12）：修正註解 `5 Concept pages` → `6 Concept pages`；頁尾補列 `word-embedding`、`transformer-architecture-and-stability`、`lecture-04`；移除僅存於 `raw` 的「陽春／先不要直接寫成品／只要是 AI 生成的務必自己讀過」，改完全對齊 Wiki。
+     - 同步更新 `checks/traceability.md`（對齊所有頁尾與將 Slide 13 展開為 Q1～Q5 逐題 Wiki 與 raw 頁碼）。
+- **重跑確定性腳本結果（Retry #1）**：
+  - `scripts/precheck_pdf_coords.py`：全數 5 個關鍵投影片皆正確偵測文字流倒置並輸出視覺排序。
+  - `scripts/check_links.py`：**PASS=26, FAIL=0**（Exit 0）。
+  - `scripts/verify_slides.py`：**PASS=35, FAIL=0**（Exit 0，全部 13 頁頁尾與 `checks/traceability.md` 100% 對齊，互動數值通過）。
+  - `scripts/check_numbers.py`：**PASS=23, FAIL=1**（Exit 1，僅剩 `L04 p.17-18` 原文 `7.53%→7%` 屬 E3 `W-15` 待人工裁決）。
+  - `scripts/check_sources.py`：維持原狀（僅對未在獨立審查發現事實錯誤的頁面保持不無故改動）。
+- **報告同步**：已依修正後實據更新 `report.md`（第一至四、六、七節，第五節反思暫留「待撰寫」）。
+
+---
+
+## 2026-11-19 15:20 E3 DECISION & B5 HUMAN CHECK｜人工裁決 E3、B5 抽查 3 頁與腳本全數通過
+- **節點**：`A2`（E3 人工閘門裁決）→ `A3`（落實加註）→ `A4a / B4a`（確定性腳本複檢）→ `B5`（人工抽查 3 頁）
+- **人工裁決結果（E3：`W-13`, `W-14`, `W-15`，全數採選項 A）**：
+  - `W-13`：確認於 `lecture-02` 與 `function-mapping` 保留簡短註記（僅 `L02 p.21` 圖示對調為家八哥／白尾八哥，`p.11-15, p.67` 為白尾八哥／家八哥）。
+  - `W-14`：於 `lecture-03`（L60）與 `probability-entropy-and-sampling`（L52）保留原文「MSE」稱呼，並加註實際計算式為未除以類別數 $3$ 亦未乘 $\frac{1}{2}$ 之平方誤差和（SSE）。
+  - `W-15`：於 `lecture-04`（L30, L81）、`lecture-05`（L56, L67）與 `lecture-02`（L68）分別加註原文四捨五入（`7.53% → 7%` 以湊 100%）、`p.80` 符號誤植、`p.46/48/49/64` 排版瑕疵與 `p.118` 紅字筆誤；並於 `scripts/check_numbers.py` 納入 `W-15` 原文捨入規則。
+- **B5 人工抽查 3 頁結果**：使用者親自抽查 **Slide 3、Slide 5、Slide 6** 對照頁尾 Wiki 與原課程講義頁碼，全數確認無誤，並記錄於 `checks/b4-slides-verification.md` 第三節。
+- **重跑確定性腳本複檢**：
+  - `scripts/check_numbers.py`：**PASS=24, FAIL=0**（Exit 0）
+  - `scripts/check_links.py`：**PASS=26, FAIL=0**（Exit 0）
+  - `scripts/verify_slides.py`：**PASS=35, FAIL=0**（Exit 0）
+
+---
+
+## 2026-11-19 15:21 DEPLOY｜提交推送 Run 2 與 GitHub Pages 線上版驗證
+- **節點**：`B5`（線上版實測與部署紀錄補齊）→ `C1`
+- **部署歷程與錯誤紀錄（補齊 Run 1 遺漏與本次推送）**：
+  - **先前 Jekyll 建置失敗（E5）**：初次推送後 GitHub Pages 預設啟用 Jekyll 建置，因 Markdown 內含數學／語法導致建置失敗；於根目錄新增 `.nojekyll`（commit `4fca11e`）跳過 Jekyll 建置並確認已受 git 追蹤。
+  - **先前誤於錯誤目錄執行 git 指令（操作失誤）**：曾於非專案資料夾（如 `C:\Windows\system32`）執行 git 指令導致失敗；本次先執行 `pwd` 與 `git status` 確認位於專案資料夾 `On branch main` 後才執行提交與推送。
+  - **線上版實測**：確認 GitHub Pages 線上網址（`https://huitinghsueh45-lab.github.io/W10_HW/slides/index.html`）於**登入視窗與無痕視窗**皆可正常開啟與互動，並於 `checks/b4-slides-verification.md` 第四節補記「線上版實測」。
+  - **流程教訓**：B4／B5 驗證必須包含**線上實測（含無痕視窗）**，不能只憑本機雙擊開啟即判定部署成功。
+- **本次提交**：`Add graph v2, independent reviewer run 2, and report fixes`（推送至 `origin/main` 並驗證 GitHub Actions `pages-build-deployment` 狀態）。
+
 
 

@@ -464,13 +464,13 @@
           </div>
           <div class="card">
             <h3 class="amber">🌪️ 焦慮 2：每天都有新工具學不完？</h3>
-            <p>ChatGPT、Claude、Gemini、Grok、Llama 每天推陳出新，不知哪個最好。</p>
-            <p style="margin-top:8px;"><strong class="emerald">原理破局：</strong>所有大型語言模型的<strong class="hl">基礎模型原理幾乎相同</strong>，懂一個就懂全部，成為強大的吸收器。</p>
+            <p>各種 AI 工具與模型每天推陳出新，覺得永遠學不完、不知哪個最好。</p>
+            <p style="margin-top:8px;"><strong class="emerald">原理破局：</strong>各家大型語言模型的<strong class="hl">基礎模型其實差不多</strong>，懂原理就能看清本質，成為強大的吸收器。</p>
           </div>
           <div class="card">
             <h3 class="indigo">🧩 焦慮 3：技術名詞看起來好難？</h3>
             <p>Prompt / Context / Harness / Loop / Graph Engineering、Chat Bot、AI Agent 令人眼花撩亂。</p>
-            <p style="margin-top:8px;"><strong class="emerald">原理破局：</strong>這些名詞本質上都只是<strong class="hl">「教 AI 做事的方法」</strong>，看懂函數與機率就不再被術語嚇倒。</p>
+            <p style="margin-top:8px;"><strong class="emerald">原理破局：</strong>這些名詞本質上都只是<strong class="hl">「教 AI 做事的方法」</strong>，看懂底層原理就不再被術語嚇倒。</p>
           </div>
         </div>
 
@@ -478,11 +478,11 @@
           <h3>🎯 掌握原理帶給你的四個超能力</h3>
           <div class="grid-2" style="gap:10px;">
             <ul>
-              <li><strong class="hl">看清限制並突破：</strong>知道 AI 為什麼會出錯，才能設計流程突破限制。</li>
+              <li><strong class="hl">看清限制並突破：</strong>知道 AI 的限制，思考如何設法突破。</li>
               <li><strong class="hl">不盲目追逐模型：</strong>明白如何挑選與測試適合自己任務的模型。</li>
             </ul>
             <ul>
-              <li><strong class="hl">懂得為何引導有效：</strong>理解為什麼提供「正確的資訊＋清楚的指引」能改變條件機率。</li>
+              <li><strong class="hl">懂得為何引導有效：</strong>知道為什麼特定的引導（prompt）會有好處。</li>
               <li><strong class="hl">本簡報學習主線：</strong>函數映射 <i>f<sub>θ</sub></i> → 神經網路與梯度下降 → 資訊熵與隨機抽樣 → Transformer。</li>
             </ul>
           </div>
@@ -491,7 +491,7 @@
 
       <div class="slide-footer">
         <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、sources/lecture-01-learn-ai-without-anxiety.md</span>
-        <span>使用鍵盤 ← → 方向鍵翻頁</span>
+        <span>Slide 1 / 13</span>
       </div>
     </section>
 
@@ -645,11 +645,11 @@
               <tbody>
                 <tr><td><strong class="hl">1. DNN</strong></td><td>全連結層 (Dense)</td><td>前一層連到下一層每個神經元；全面考慮的基本型（只需決定幾層、每層幾個神經元）</td></tr>
                 <tr><td><strong class="hl">2. CNN</strong></td><td>卷積層 (Conv)</td><td>圖形與影像辨識天王</td></tr>
-                <tr><td><strong class="hl">3. RNN</strong></td><td>遞歸層 (LSTM/GRU)</td><td>有記憶的結構，把上次輸出 <i>h<sub>t-1</sub></i> 傳回與本次 <i>x<sub>t</sub></i> 結合</td></tr>
-                <tr><td><strong class="blue">+1. Transformers</strong></td><td>Self-Attention</td><td>現代大型語言模型與多模態生成的核心架構</td></tr>
+                <tr><td><strong class="hl">3. RNN</strong></td><td>遞歸層 (LSTM/GRU)</td><td>有記憶的結構，處理具先後順序之資料</td></tr>
+                <tr><td><strong class="blue">+1. Transformers</strong></td><td>第 +1 種重要架構</td><td>現代深度學習與大型語言模型之核心架構（詳見第 8–9 頁）</td></tr>
               </tbody>
             </table>
-            <p style="font-size:0.83rem; margin-top:8px;">💡 <strong class="hl">為什麼上世紀神經網路沒成功？</strong>三巨頭（Hinton、LeCun、Bengio）指出當年欠缺三大要件：<strong class="emerald">複雜的軟體、大量的數據、電腦計算能力</strong>。</p>
+            <p style="font-size:0.83rem; margin-top:8px;">💡 <strong class="hl">為什麼上世紀神經網路沒成功？</strong>深度學習由三巨頭（Hinton、LeCun、Bengio）奠基；上世紀未能如預期成功，是因為當年欠缺三大要件：<strong class="emerald">複雜的軟體、大量的數據、電腦計算能力</strong>。</p>
           </div>
         </div>
       </div>
@@ -688,7 +688,7 @@
               <li><strong class="hl">Word2Vec（Mikolov et al., 2013）兩種代理任務：</strong>
                 <br>• <b>CBOW：</b>用周圍字 (<i>x</i><sub><i>t</i>-2</sub>, <i>x</i><sub><i>t</i>-1</sub>, <i>x</i><sub><i>t</i>+1</sub>, <i>x</i><sub><i>t</i>+2</sub>) 預測中間字 <i>x<sub>t</sub></i>。
                 <br>• <b>Skip-Gram：</b>用中間字 <i>x<sub>t</sub></i> 預測周圍的字。</li>
-              <li><strong class="amber">權重即記憶：</strong>One-hot 乘上權重矩陣 <i>W<sup>T</sup>x = h</i> 就是直接抽出對應列向量（Transformer 則內建 Embedding 層同步訓練），相似字自動群聚且滿足「國王 − 男人 + 女人 = 皇后」！</li>
+              <li><strong class="amber">權重即記憶：</strong>One-hot 乘上權重矩陣 <i>W<sup>T</sup>x = h</i> 就是直接抽出對應列向量（Transformer 則內建 Embedding 層同步訓練），相似字自動群聚且能反映「國王 — 男人 vs. 皇后 — 女人」、「巴黎 — 法國 vs. 羅馬 — 義大利」等語意關係！</li>
             </ul>
           </div>
         </div>
@@ -750,7 +750,7 @@
       </div>
 
       <div class="slide-footer">
-        <span class="wiki-source-badge">來源 Wiki：concepts/neural-networks-and-learning.md、concepts/probability-entropy-and-sampling.md</span>
+        <span class="wiki-source-badge">來源 Wiki：concepts/neural-networks-and-learning.md、concepts/probability-entropy-and-sampling.md、sources/lecture-02-neural-networks.md</span>
         <span>Slide 6 / 13</span>
       </div>
     </section>
@@ -771,7 +771,7 @@
               <li><strong class="hl">途徑 1（輸入端隨機）：GAN 與 StyleGAN</strong><br>
                 生成器 <i>G(z)</i> 接收隨機潛向量 <i>z</i> 與鑑別器 <i>D(x)</i> 對抗（min<sub><i>G</i></sub> max<sub><i>D</i></sub> <i>V(D,G)</i>）；StyleGAN 將 512 維 <i>z</i> 轉為風格向量 <i>w</i> 並以 <b>AdaIN</b> 注入各層。</li>
               <li><strong class="hl">途徑 2（輸出端抽樣）：依 Softmax 機率抽字</strong><br>
-                八哥辨識永遠挑最高分（argmax），但咖啡推薦或 LLM 猜下一個字則<b>依機率分佈隨機抽樣</b>（如「呆一布在」後接：家 15%、玩 12%、桌 7%、裝 3%）。</li>
+                八哥辨識永遠挑最高分（argmax），但推薦系統或 LLM 猜下一個字則<b>依機率分佈隨機抽樣</b>（如「呆一布在」後接：家 15%、玩 12%、桌 7%、裝 3%）。</li>
               <li><strong class="amber">Top-k（如 <i>k</i>=50）：</strong>只留前 <i>k</i> 名，但遇唯一正解（「老師是蔡炎＿」必接「龍」）時仍可能混入無關字。</li>
               <li><strong class="emerald">Top-p（Nucleus Sampling, ICLR 2020）：</strong>由最高分往下累加至 ∑<sub><i>i</i>=1</sub><sup><i>N</i></sup> <i>p<sub>i</sub> > p</i>（如 <i>p</i>=0.9）動態決定前 <i>N</i> 個字，再重分配機率 <i>p'<sub>k</sub> = p<sub>k</sub> / P</i>。</li>
             </ul>
@@ -779,7 +779,7 @@
 
           <div class="card">
             <h3 class="emerald">🌡️ 互動體驗：Temperature（溫度 τ）如何改變贏者通吃？</h3>
-            <p>Softmax 指數轉換改為 <i>e<sup>a/τ</sup></i>。點擊下方按鈕切換教材 `p.57` 實測溫度（原始分數 <code>[4.3, 3.4, 0.2]</code>）：</p>
+            <p>Softmax 指數轉換改為 <i>e<sup>a/τ</sup></i>。點擊下方按鈕切換實測溫度（原始分數 <code>a = 4.3, b = 3.4, c = 0.2</code>）：</p>
             <div style="display:flex; gap:8px; margin:8px 0;">
               <button class="btn" id="tauBtn05" onclick="setTau(0.5)">低溫 τ = 0.5（更固定）</button>
               <button class="btn active" id="tauBtn10" onclick="setTau(1.0)">標準 τ = 1.0（預設）</button>
@@ -790,7 +790,7 @@
                 目前設定：τ = 1.0 — 標準 Softmax 指數轉換（具「贏者通吃」特性）
               </div>
               <div class="bar-row">
-                <span class="bar-label">候選字 c (4.3)</span>
+                <span class="bar-label">候選字 a (4.3)</span>
                 <div class="bar-track"><div class="bar-fill" id="tauBar1" style="width:70%;"></div></div>
                 <span class="bar-val" id="tauVal1">70%</span>
               </div>
@@ -800,7 +800,7 @@
                 <span class="bar-val" id="tauVal2">29%</span>
               </div>
               <div class="bar-row">
-                <span class="bar-label">候選字 a (0.2)</span>
+                <span class="bar-label">候選字 c (0.2)</span>
                 <div class="bar-track"><div class="bar-fill" id="tauBar3" style="width:1%;"></div></div>
                 <span class="bar-val" id="tauVal3">1%</span>
               </div>
@@ -848,11 +848,11 @@
             <h3 class="amber">🔍 跨來源查核：為什麼一定要除以 √<i>d<sub>k</sub></i>？</h3>
             <p style="font-size:0.86rem;">
               • <b>原論文理論（Footnote 4）：</b>若 <i>q, k</i> 分量平均 0、變異數 1，內積變異數會膨脹為 <i>d<sub>k</sub></i>，大數值會把 Softmax 推入<b>梯度極小區</b>；除以 √<i>d<sub>k</sub></i> 能把變異數壓回 1。<br>
-              • <b>第五講直覺（p.32-33）：</b>抑制 Softmax「贏者通吃」，如同設溫度 <i>τ = √d<sub>k</sub></i> 把數字拉回 0 附近！
+              • <b>課程直覺（抑制贏者通吃）：</b>如同設溫度 <i>τ = √d<sub>k</sub></i> 把數值拉回 0 附近，避免最高分權重過度集中！
             </p>
             <div style="display:flex; gap:8px; margin:6px 0;">
               <button class="btn active" id="dkBtnRaw" onclick="toggleDk(false)">未除以 √d_k（贏者通吃）</button>
-              <button class="btn" id="dkBtnScaled" onclick="toggleDk(true)">同除以 √5 ≈ 2.236（拉回 0 附近）</button>
+              <button class="btn" id="dkBtnScaled" onclick="toggleDk(true)">同除以 τ = √d_k（拉回 0 附近）</button>
             </div>
             <div class="interactive-panel">
               <div id="dkTitle" style="font-size:0.82rem; color:var(--accent-amber); font-weight:700; margin-bottom:4px;">
@@ -975,7 +975,7 @@
       </div>
 
       <div class="slide-footer">
-        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、concepts/neural-networks-and-learning.md、concepts/transformer-and-self-attention.md</span>
+        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、concepts/neural-networks-and-learning.md、concepts/transformer-and-self-attention.md、sources/lecture-02-neural-networks.md、sources/lecture-04-llm-next-token-prediction.md</span>
         <span>Slide 10 / 13</span>
       </div>
     </section>
@@ -1007,7 +1007,7 @@
             </tr>
             <tr>
               <td><strong class="rose">誤解 3：</strong>「把 Temperature 調高（τ &gt; 1）能讓模型考慮更周全、算得更準。」</td>
-              <td>調高 <b>τ &gt; 1</b> 只是把指数 <i>e<sup>a/τ</sup></i> 的分數差距拉近，讓低分候選字更容易被抽中（<strong class="amber">更隨機</strong>）；若希望答案穩定一致，反而應調低 <b>τ &lt; 1</b>。</td>
+              <td>調高 <b>τ &gt; 1</b> 只是把指數 <i>e<sup>a/τ</sup></i> 的分數差距拉近，讓低分候選字更容易被抽中（<strong class="amber">更隨機</strong>）；若希望答案穩定一致，反而應調低 <b>τ &lt; 1</b>。</td>
             </tr>
             <tr>
               <td><strong class="rose">誤解 4：</strong>「Transformer 裡每一層的 Attention 都是 Self-Attention（自注意力）。」</td>
@@ -1022,7 +1022,7 @@
       </div>
 
       <div class="slide-footer">
-        <span class="wiki-source-badge">來源 Wiki：concepts/probability-entropy-and-sampling.md、concepts/word-embedding-and-sampling-strategies.md、concepts/transformer-and-self-attention.md、concepts/transformer-architecture-and-stability.md</span>
+        <span class="wiki-source-badge">來源 Wiki：concepts/neural-networks-and-learning.md、concepts/probability-entropy-and-sampling.md、concepts/word-embedding-and-sampling-strategies.md、concepts/transformer-and-self-attention.md、concepts/transformer-architecture-and-stability.md、sources/lecture-04-llm-next-token-prediction.md</span>
         <span>Slide 11 / 13</span>
       </div>
     </section>
@@ -1036,7 +1036,7 @@
       </div>
 
       <div class="slide-body">
-        <!-- SVG Flowchart connecting all 5 Concept pages -->
+        <!-- SVG Flowchart connecting all 6 Concept pages -->
         <div class="card" style="padding:12px 16px;">
           <svg viewBox="0 0 1100 155" width="100%" height="145" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -1095,19 +1095,19 @@
             </ol>
           </div>
           <div class="card">
-            <h3 class="amber">🤝 Prompt 必殺技：和 AI 一起寫規格書！</h3>
+            <h3 class="amber">🤝 Prompt 必殺技：和 AI 一起寫 Prompt／規格書！</h3>
             <ol>
-              <li>先給陽春方向並補充<strong class="hl">只有你知道的專屬背景內容</strong>。</li>
-              <li><strong class="hl">請 AI 訪問你：</strong>問還有哪些需要釐清的地方。</li>
-              <li>請 AI 根據討論<strong class="hl">整理成結構化草稿／規格書（先不要直接寫成品）</strong>。</li>
-              <li><strong class="emerald">人工親自閱讀並修改：</strong>只要是 AI 生成的，務必自己讀過把關！</li>
+              <li>先給基本方向並補充<strong class="hl">自己獨有的背景知識</strong>。</li>
+              <li><strong class="hl">請 AI 訪問自己：</strong>透過對話釐清還有哪些細節。</li>
+              <li>請 AI 根據討論<strong class="hl">整理成草稿／規格書</strong>。</li>
+              <li><strong class="emerald">人工親自閱讀並修改：</strong>最後由人類親自審閱把關！</li>
             </ol>
           </div>
         </div>
       </div>
 
       <div class="slide-footer">
-        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、concepts/neural-networks-and-learning.md、concepts/probability-entropy-and-sampling.md、concepts/transformer-and-self-attention.md</span>
+        <span class="wiki-source-badge">來源 Wiki：concepts/function-mapping.md、concepts/neural-networks-and-learning.md、concepts/probability-entropy-and-sampling.md、concepts/word-embedding-and-sampling-strategies.md、concepts/transformer-and-self-attention.md、concepts/transformer-architecture-and-stability.md、sources/lecture-04-llm-next-token-prediction.md</span>
         <span>Slide 12 / 13</span>
       </div>
     </section>
@@ -1187,7 +1187,7 @@
               <button class="btn" onclick="answerQuiz(5, true, this)">B. Decoder 第一層會將未來位置設為 −∞（Mask 遮住），且 Decoder 中間層的 Q 來自 Decoder、K 與 V 來自 Encoder（非 Self-Attention）</button>
             </div>
             <div class="quiz-ans" id="qAns5">
-              ✅ <b>正解 B：</b>Decoder 第一層使用 Masked Self-Attention（設為 −∞ 防止偷看未來字），而 Decoder 中間層是檢索 Encoder 先備知識 <i>K, V</i> 的 Cross-Attention，並非 Self-Attention！<br>
+              ✅ <b>正解 B：</b>Decoder 第一層使用 Masked Multi-Head Self-Attention（設為 −∞ 防止偷看未來字），而 Decoder 中間層則是根據 Decoder 查詢 <i>Q</i> 去檢索 Encoder 先備知識 <i>K, V</i>，並非 Self-Attention！<br>
               <span style="color:#93c5fd;">[來源 Wiki：concepts/transformer-architecture-and-stability.md]</span>
             </div>
           </div>
@@ -1261,7 +1261,7 @@
       }
     });
 
-    // Slide 7 Interactive Temperature Simulator (using exact Lecture 04 p.57 numbers)
+    // Slide 7 Interactive Temperature Simulator (using exact numbers from wiki/concepts/word-embedding-and-sampling-strategies.md)
     function setTau(tau) {
       document.getElementById('tauBtn05').classList.toggle('active', tau === 0.5);
       document.getElementById('tauBtn10').classList.toggle('active', tau === 1.0);
@@ -1292,14 +1292,14 @@
       }
     }
 
-    // Slide 8 Interactive sqrt(d_k) Scaling Toggle (using exact Lecture 05 p.32-33 numbers)
+    // Slide 8 Interactive sqrt(d_k) Scaling Toggle (using exact numbers from wiki/concepts/transformer-and-self-attention.md)
     function toggleDk(scaled) {
       document.getElementById('dkBtnRaw').classList.toggle('active', !scaled);
       document.getElementById('dkBtnScaled').classList.toggle('active', scaled);
       const title = document.getElementById('dkTitle');
       const data = scaled
         ? {
-            t: '除以 √5 後 [1.74, 1.43, 0.45, 0.13, 0.49] ──Softmax──▶ 數字拉回 0 附近，權重分佈合理平滑！',
+            t: '同除以 τ = √d_k 後 [1.74, 1.43, 0.45, 0.13, 0.49] ──Softmax──▶ 數字拉回 0 附近，權重分佈合理平滑！（四捨五入總和 99%）',
             labels: ['位置 1 (1.74)', '位置 2 (1.43)', '位置 3 (0.45)', '位置 4 (0.13)', '位置 5 (0.49)'],
             vals: [40, 29, 11, 8, 11]
           }

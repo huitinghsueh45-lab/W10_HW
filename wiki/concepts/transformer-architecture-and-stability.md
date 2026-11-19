@@ -2,7 +2,7 @@
 title: Transformer 完整架構：位置編碼、殘差連結與正規化（Positional Encoding, Residual & Norm）
 type: concept
 sources: [05AI怎麼記得前面說過什麼？.pdf, Vaswani_2017_Attention_Is_All_You_Need.pdf]
-updated: 2026-11-18
+updated: 2026-11-19
 status: linted
 ---
 
@@ -10,7 +10,7 @@ status: linted
 
 ## 一、為什麼只有 Self-Attention 還不夠組成 Transformer？
 雖然 **Self-Attention（自注意力機制）**讓模型擺脫了 RNN 逐字遞迴的瓶頸、能夠一次平行處理整段序列（參見 [[transformer-and-self-attention]]），但若只有單純的 Self-Attention，模型仍會面臨三個關鍵問題 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.36, p.42, p.52]`：
-1. **喪失先後順序感**：平行做內積時，「狗咬人」與「人咬狗」的字向量集合相同，模型不知道誰前誰後 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.42]`。
+1. **喪失先後順序感**：Transformer 為了平行化而一次做完 Self-Attention，每個字的先後順序並沒有真的被考慮進去 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.42]`。
 2. **單一注意力視角有限，且生成時不能偷看未來答案**：只算一組 Q, K, V 只能捕捉一種關聯，且在 Decoder 生成下一個字時，不能讓模型偷看後面還沒生出來的字 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.36-40]`。
 3. **網路疊深後難以訓練與收斂**：當層數變深，損失函數地形會變得極度崎嶇，數值也容易發散 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.52, p.58]`。
 
@@ -32,8 +32,9 @@ $$\omega_k = \frac{1}{10000^{2k/d}}, \quad \begin{cases} p_{2k} = \sin(\omega_k 
   - **代數相對位置性質（Vaswani et al., 2017）**：對於任何固定的位置偏移量 $k$，**$PE_{pos+k}$ 都可以表示為 $PE_{pos}$ 的線性函數**，這讓模型能輕易學會根據「相對位置（relative positions）」分配注意力，並外插到比訓練時更長的序列長度 `[來源: Vaswani_2017_Attention_Is_All_You_Need.pdf p.6]`。
 
 ### 2. Multi-Head Attention 與 Encoder / Decoder 的三種注意力機制
-- **多頭注意力（Multi-Head Attention）**：字與字之間的關聯不只一種（如語法關聯、指代關聯、語意關聯），若只用單一注意力頭做平均會抑制不同子空間的資訊；因此將 $Q, K, V$ 以不同學習矩陣投影 $h$ 次（原版 Base 模型設 $d_{\text{model}}=512$、平行頭數 **$h=8$**、每頭維度 **$d_k = d_v = d_{\text{model}}/h = 64$**），平行計算後再串接（Concat）並乘上輸出投影矩陣 $W^O$ `[來源: 05AI怎麼記得前面說過什麼？.pdf p.36]` `[來源: Vaswani_2017_Attention_Is_All_You_Need.pdf p.4-5]`：
-  $$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \dots, \text{head}_h)W^O, \quad \text{where } \text{head}_n = \text{Attention}(X W^Q_n, X W^K_n, X W^V_n)$$
+- **多頭注意力（Multi-Head Attention）**：字與字之間的關聯不只一種（例如原論文視覺化顯示不同注意力頭能關注句子中的語法、語意結構與指代消解），若只用單一注意力頭做平均會抑制不同表示子空間（representation subspaces）的資訊；因此將 $Q, K, V$ 以不同學習矩陣投影 $h$ 次（原版 Base 模型設 $d_{\text{model}}=512$、平行頭數 **$h=8$**、每頭維度 **$d_k = d_v = d_{\text{model}}/h = 64$**），平行計算後再串接（Concat）並乘上輸出投影矩陣 $W^O$ `[來源: 05AI怎麼記得前面說過什麼？.pdf p.36]` `[來源: Vaswani_2017_Attention_Is_All_You_Need.pdf p.4-5, p.7, p.14]`：
+  $$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \dots, \text{head}_h)W^O, \quad \text{where } \text{head}_i = \text{Attention}(Q W^Q_i, K W^K_i, V W^V_i)$$
+  （註：當在 Self-Attention 情境、即 $Q, K, V$ 皆由同一輸入 $X$ 產生時，第 $n$ 個注意力頭亦記為 $\text{Attention}(X W^Q_n, X W^K_n, X W^V_n)$ `[來源: 05AI怎麼記得前面說過什麼？.pdf p.36]`。）
 - **Encoder 與 Decoder 中的三種 Attention 角色**（原版 Base 模型 Encoder 與 Decoder 各堆疊 **$N=6$ 層**，每層另含內層維度 $d_{ff}=2048$ 的前饋網路 $\text{FFN}(x)=\max(0, xW_1+b_1)W_2+b_2$）`[來源: 05AI怎麼記得前面說過什麼？.pdf p.37-40, p.67]` `[來源: Vaswani_2017_Attention_Is_All_You_Need.pdf p.3, p.5]`：
 
 | 所在位置 | 注意力層名稱 | $Q, K, V$ 的來源 | 核心功能與特性 |
@@ -60,8 +61,8 @@ $$\omega_k = \frac{1}{10000^{2k/d}}, \quad \begin{cases} p_{2k} = \sin(\omega_k 
 ## 三、常見誤解
 - **誤解 1：「Transformer 裡面每一層的 Attention 都是 Self-Attention（自注意力）」**
   - **事實**：在標準 Encoder-Decoder Transformer 中，Decoder 中間那層並不是 Self-Attention！它的 Query ($Q$) 來自 Decoder 前一層，但 Key ($K$) 與 Value ($V$) 來自 Encoder 的輸出（在跨模態文字生圖中，也是用圖像潛變數當 $Q$、文字特徵當 $K, V$）`[來源: 05AI怎麼記得前面說過什麼？.pdf p.38, p.67]`。
-- **誤解 2：「位置編碼（Positional Encoding）只是在每個字後面串接一個代表第幾個字的整數 $1, 2, 3, \dots$」**
-  - **事實**：若直接放整數 $1, 2, \dots, T$，句子越長數值越大，會嚴重破壞原本的詞嵌入向量；因此原版 Transformer 採用與詞向量同維度 $d$、由不同頻率 $\omega_k = 1/10000^{2k/d}$ 的 $(\sin(\omega_k t), \cos(\omega_k t))$ 所組成的有界週期向量，直接加在詞嵌入向量上 `[來源: 05AI怎麼記得前面說過什麼？.pdf p.42-50]`。
+- **誤解 2：「位置編碼（Positional Encoding）隨便用不限制大小或無週期性的數字加上去就好」**
+  - **事實**：為避免位置數值過大而蓋過原本的詞嵌入向量 $x_t$，並兼顧連續性與類似十進位進位系統的週期規律，原版 Transformer 採用與詞向量同維度 $d$、由不同頻率 $\omega_k = 1/10000^{2k/d}$ 的 $(\sin(\omega_k t), \cos(\omega_k t))$ 所構成、數值介於 $[-1, 1]$ 的週期向量，直接加在詞嵌入向量上（$x_t + p_t$）`[來源: 05AI怎麼記得前面說過什麼？.pdf p.42-50]`。
 
 ---
 

@@ -5,7 +5,7 @@
 ## 來源摘要頁（`wiki/sources/`）
 
 - [[lecture-01-learn-ai-without-anxiety]] — 課程第一講摘要：用原理對抗三大 AI 焦慮、理解 AI 模型作為輸入到輸出的函數 $f_\theta$（八哥辨識案例）、生成式 AI 起源動機與 Colab 函數視覺化實作。
-- [[lecture-02-neural-networks]] — 課程第二講摘要：張量（Tensor）與 One-hot / Softmax 表示、神經元數學模型与 3+1 種架構（DNN / CNN / RNN + Transformers）、損失函數與梯度下降法（Gradient Descent），以及 MNIST 手寫辨識實作。
+- [[lecture-02-neural-networks]] — 課程第二講摘要：張量（Tensor）與 One-hot / Softmax 表示、神經元數學模型與 3+1 種架構（DNN / CNN / RNN + Transformers）、損失函數與梯度下降法（Gradient Descent），以及 MNIST 手寫辨識實作。
 - [[lecture-03-why-ai-differs-each-time]] — 課程第三講摘要：一對多平均困境與潛張量 $z$、生成對抗網路（GAN / StyleGAN / CycleGAN）、資訊量與熵（Entropy / Cross Entropy / KL Divergence），以及生成模型透過機率抽樣產生隨機性的機制。
 - [[lecture-04-llm-next-token-prediction]] — 課程第四講摘要：LLM「猜下一個字」的自監督訓練與序列記憶需求、RNN 與 Transformer Self-Attention 公式、Karpathy「幻覺（作夢機器）」與資料規模、Temperature / Top-k / Top-p 選字策略，以及 Word2Vec 詞嵌入（CBOW / Skip-Gram）與 Prompt 原則。
 - [[lecture-05-sequence-memory-and-attention]] — 課程第五講摘要：RNN 遞歸層數學式、Google 列向量線性組合傳統、QKV 注意力推導與除以 $\sqrt{d_k}$ 抑制贏者通吃之機制、Encoder/Decoder 三種注意力與 Mask、Positional Encoding 時鐘直覺，以及 ResNet 殘差連結與 LayerNorm / RMSNorm / DyT。
